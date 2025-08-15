@@ -1,0 +1,8 @@
+<!-- This is a placeholder. Replace with actual image: Young family with a toddler, reviewing health insurance with a laptop at a kitchen table; bright and optimistic mood; 3:2 -->
+<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#e2e8f0"/>
+  <rect x="25" y="25" width="550" height="350" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="300" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#475569">Young Family</text>
+  <text x="300" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#64748b">Health insurance planning</text>
+  <text x="300" y="230" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#64748b">3:2 ratio (600x400px)</text>
+</svg>
