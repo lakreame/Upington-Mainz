@@ -31,6 +31,7 @@ jobs:
           app_location: "./azure-deploy" # App source code path
           api_location: "./azure-deploy/api" # Api source code path - optional
           output_location: "/" # Built app content directory - optional
+          skip_app_build: true # Skip build since files are already built
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
