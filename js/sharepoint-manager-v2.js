@@ -33,7 +33,7 @@ class SharePointManager {
                 auth: {
                     clientId: this.clientId,
                     authority: `https://login.microsoftonline.com/${this.tenantId}`,
-                    redirectUri: window.location.origin + window.location.pathname
+                    redirectUri: 'https://upingtonmainz.com'
                 },
                 cache: {
                     cacheLocation: "localStorage",
@@ -86,11 +86,9 @@ class SharePointManager {
                     throw new Error('No cached accounts found');
                 }
             } catch (silentError) {
-                this.log('Silent authentication failed, trying redirect login:', silentError.message);
-                // Use redirect instead of popup to avoid popup blocking issues
-                await this.msalInstance.loginRedirect(loginRequest);
-                // The page will redirect and authentication will be handled on return
-                return false; // This will be handled by handleRedirectPromise
+                this.log('Silent authentication failed, trying popup login:', silentError.message);
+                // Use popup instead of redirect to avoid page reload issues
+                authResult = await this.msalInstance.loginPopup(loginRequest);
             }
             
             this.accessToken = authResult.accessToken;
