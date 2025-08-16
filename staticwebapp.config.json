@@ -7,7 +7,7 @@
   ],
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/assets/**", "/js/**", "*.{css,scss,sass,js,json,ico,png,jpg,jpeg,gif,svg,xml,txt}"]
+    "exclude": ["/assets/*", "/js/*", "*.css", "*.js", "*.json", "*.ico", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.svg", "*.xml", "*.txt"]
   },
   "mimeTypes": {
     ".xml": "application/xml",
