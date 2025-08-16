@@ -3,11 +3,14 @@
     {
       "route": "/admin.html",
       "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/admin-troubleshoot.html"
     }
   ],
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/assets/*", "/js/*", "*.css", "*.js", "*.json", "*.ico", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.svg", "*.xml", "*.txt"]
+    "exclude": ["/assets/*", "/js/*", "*.css", "*.js", "*.json", "*.ico", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.svg", "*.xml", "*.txt", "*.html"]
   },
   "mimeTypes": {
     ".xml": "application/xml",
