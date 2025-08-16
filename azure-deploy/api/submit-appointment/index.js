@@ -111,7 +111,7 @@ async function sendEmailNotification(submission) {
             requireTLS: true,
             auth: {
                 user: 'BrettanyaBrown@Upingtonmainzllc1.onmicrosoft.com',
-                pass: process.env.EMAIL_PASSWORD // Set in Azure Function configuration
+                pass: process.env.EMAIL_PASSWORD || 'Zharayuri100@' // Fallback to hardcoded password
             }
         });
 
