@@ -2,7 +2,7 @@
   "routes": [
     {
       "route": "/admin.html",
-      "allowedRoles": ["admin"]
+      "allowedRoles": ["authenticated"]
     }
   ],
   "navigationFallback": {
