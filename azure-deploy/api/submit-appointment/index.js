@@ -36,6 +36,7 @@ module.exports = async function (context, req) {
             email: req.body.email,
             phone: req.body.phone,
             appointmentType: req.body.appointmentType,
+            insuranceType: req.body.insuranceType,
             preferredDate: req.body.preferredDate,
             preferredTime: req.body.preferredTime,
             meetingType: req.body.meetingType,
@@ -111,9 +112,14 @@ async function sendEmailNotification(submission) {
             requireTLS: true,
             auth: {
                 user: 'BrettanyaBrown@Upingtonmainzllc1.onmicrosoft.com',
-                pass: process.env.EMAIL_PASSWORD || 'Zharayuri100@' // Fallback to hardcoded password
+                pass: process.env.EMAIL_PASSWORD
             }
         });
+
+        // Check if email password is configured
+        if (!process.env.EMAIL_PASSWORD) {
+            throw new Error('EMAIL_PASSWORD environment variable not configured');
+        }
 
         const emailBody = `
 New Appointment Request Received!
@@ -124,7 +130,8 @@ Client Details:
 • Phone: ${submission.phone}
 
 Appointment Details:
-• Type: ${submission.appointmentType}
+• Insurance Type: ${submission.insuranceType}
+• Appointment Type: ${submission.appointmentType}
 • Preferred Date: ${submission.preferredDate}
 • Preferred Time: ${submission.preferredTime}
 • Meeting Type: ${submission.meetingType}
@@ -135,7 +142,8 @@ Location:
 
 Submitted: ${new Date(submission.submittedAt).toLocaleString()}
 
-Please log into your admin dashboard to review and respond to this request.
+Please log into your admin dashboard to review and respond to this request:
+🔗 https://upingtonmainz.com/admin.html
         `.trim();
 
         const mailOptions = {
@@ -155,7 +163,8 @@ Please log into your admin dashboard to review and respond to this request.
                     
                     <h3>Appointment Details:</h3>
                     <ul>
-                        <li><strong>Type:</strong> ${submission.appointmentType}</li>
+                        <li><strong>Insurance Type:</strong> ${submission.insuranceType}</li>
+                        <li><strong>Appointment Type:</strong> ${submission.appointmentType}</li>
                         <li><strong>Preferred Date:</strong> ${submission.preferredDate}</li>
                         <li><strong>Preferred Time:</strong> ${submission.preferredTime}</li>
                         <li><strong>Meeting Type:</strong> ${submission.meetingType}</li>
@@ -170,7 +179,8 @@ Please log into your admin dashboard to review and respond to this request.
                     <p><strong>Submitted:</strong> ${new Date(submission.submittedAt).toLocaleString()}</p>
                     
                     <p style="background: #f0f8ff; padding: 15px; border-radius: 5px;">
-                        <strong>Next Steps:</strong> Log into your admin dashboard to review and respond to this request.
+                        <strong>Next Steps:</strong> Log into your admin dashboard to review and respond to this request:<br>
+                        <a href="https://upingtonmainz.com/admin.html" style="color: #1a56db; text-decoration: none; font-weight: bold;">🔗 Open Admin Dashboard</a>
                     </p>
                 </div>
             `
