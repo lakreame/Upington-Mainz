@@ -169,7 +169,7 @@
                 updateStatus('auth-status', 'Starting authentication...', 'info');
 
                 const loginRequest = {
-                    scopes: ["User.Read", `${SHAREPOINT_CONFIG.siteUrl}/.default`],
+                    scopes: ["User.Read"],
                     prompt: "select_account"
                 };
 
@@ -183,9 +183,9 @@
                 // Enable SharePoint test
                 document.getElementById('test-sharepoint').disabled = false;
                 
-                // Get access token
+                // Get access token for SharePoint
                 const tokenRequest = {
-                    scopes: [`${SHAREPOINT_CONFIG.siteUrl}/.default`],
+                    scopes: ["https://graph.microsoft.com/Sites.ReadWrite.All"],
                     account: loginResponse.account
                 };
                 
