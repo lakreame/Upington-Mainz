@@ -183,65 +183,71 @@
                         </div>
                     </div>
                     
-                    <div class="mt-6">
-                        <label class="block text-sm font-medium text-slate-700 mb-3">Meeting Type Preference *</label>
-                        <div class="space-y-2">
-                            <label class="flex items-center">
-                                <input type="radio" name="meetingType" value="Phone" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-slate-700">Phone</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="meetingType" value="In-Person" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-slate-700">In-Person</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="meetingType" value="Online (e.g., Zoom)" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-slate-700">Online (e.g., Zoom)</span>
-                            </label>
+                    <!-- Three-column responsive grid for form sections -->
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Meeting Type -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-3">Meeting Type Preference *</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="radio" name="meetingType" value="Phone" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-slate-700">Phone</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="meetingType" value="In-Person" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-slate-700">In-Person</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="meetingType" value="Online (e.g., Zoom)" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-slate-700">Online (e.g., Zoom)</span>
+                                </label>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="mt-6">
-                        <label class="block text-sm font-medium text-slate-700 mb-3">What type of insurance? *</label>
-                        <div class="space-y-2">
-                            <label class="flex items-center">
-                                <input type="radio" name="insuranceType" value="Medicare Health Plan" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-slate-700">Medicare Health Plan</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="insuranceType" value="Life Insurance" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-slate-700">Life Insurance</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="insuranceType" value="Health Insurance" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-slate-700">Health Insurance</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="insuranceType" value="Annuities" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-slate-700">Annuities</span>
-                            </label>
+                        
+                        <!-- Insurance Type -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-3">What type of insurance? *</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="radio" name="insuranceType" value="Medicare Health Plan" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-slate-700">Medicare Health Plan</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="insuranceType" value="Life Insurance" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-slate-700">Life Insurance</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="insuranceType" value="Health Insurance" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-slate-700">Health Insurance</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="insuranceType" value="Annuities" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-slate-700">Annuities</span>
+                                </label>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="mt-6">
-                        <label class="block text-sm font-medium text-slate-700 mb-3">What type of appointment? *</label>
-                        <div class="space-y-2">
-                            <label class="flex items-center">
-                                <input type="radio" name="appointmentType" value="Initial Consultation" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-slate-700">Initial Consultation</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="appointmentType" value="Follow-up Meeting" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-slate-700">Follow-up Meeting</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="appointmentType" value="Policy Review" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-slate-700">Policy Review</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="appointmentType" value="Claims Assistance" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
-                                <span class="text-slate-700">Claims Assistance</span>
-                            </label>
+                        
+                        <!-- Appointment Type -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-3">What type of appointment? *</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="radio" name="appointmentType" value="Initial Consultation" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-slate-700">Initial Consultation</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="appointmentType" value="Follow-up Meeting" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-slate-700">Follow-up Meeting</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="appointmentType" value="Policy Review" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-slate-700">Policy Review</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="appointmentType" value="Claims Assistance" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-slate-700">Claims Assistance</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                     
