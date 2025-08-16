@@ -1,0 +1,21 @@
+{
+  "routes": [
+    {
+      "route": "/admin.html",
+      "allowedRoles": ["admin"]
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/assets/**", "/js/**", "*.{css,scss,sass,js,json,ico,png,jpg,jpeg,gif,svg,xml,txt}"]
+  },
+  "mimeTypes": {
+    ".xml": "application/xml",
+    ".txt": "text/plain"
+  },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "X-XSS-Protection": "1; mode=block"
+  }
+}

@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Testimonials & Reviews — Upington Mainz Insurance Georgia</title>
+    <meta name="description" content="Read real client testimonials and Google reviews for Upington Mainz insurance services. 4.9/5 stars from satisfied Medicare, health, and life insurance clients in Georgia.">
+    <meta name="keywords" content="Upington Mainz reviews, Medicare testimonials Georgia, insurance agent reviews, Brettanya insurance reviews, client testimonials, Google reviews insurance, Medicare reviews Atlanta">
+    <meta name="author" content="Upington Mainz LLC">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://upingtonmainz.com/testimonials.html">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://upingtonmainz.com/testimonials.html">
+    <meta property="og:title" content="Client Testimonials & Reviews — Upington Mainz Insurance">
+    <meta property="og:description" content="Read real client testimonials and Google reviews. 4.9/5 stars from satisfied Medicare, health, and life insurance clients in Georgia.">
+    <meta property="og:image" content="https://upingtonmainz.com/assets/images/testimonials-collage.jpg">
+    <meta property="og:site_name" content="Upington Mainz">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://upingtonmainz.com/testimonials.html">
+    <meta property="twitter:title" content="Client Testimonials & Reviews — Upington Mainz Insurance">
+    <meta property="twitter:description" content="Read real client testimonials and Google reviews. 4.9/5 stars from satisfied clients.">
+    <meta property="twitter:image" content="https://upingtonmainz.com/assets/images/testimonials-collage.jpg">
+    
+    <!-- Review Schema -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Upington Mainz",
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "reviewCount": "50",
+            "bestRating": "5",
+            "worstRating": "1"
+        },
+        "review": [
+            {
+                "@type": "Review",
+                "reviewRating": {
+                    "@type": "Rating",
+                    "ratingValue": "5"
+                },
+                "author": {
+                    "@type": "Person",
+                    "name": "Sarah Mitchell"
+                },
+                "reviewBody": "Upington Mainz helped us find the perfect health insurance plan for our growing family. Their expertise saved us both time and money!"
+            },
+            {
+                "@type": "Review",
+                "reviewRating": {
+                    "@type": "Rating",
+                    "ratingValue": "5"
+                },
+                "author": {
+                    "@type": "Person",
+                    "name": "Robert Johnson"
+                },
+                "reviewBody": "As a senior looking for Medicare coverage, I was overwhelmed by all the options. Brettanya guided me through everything and found a plan that covers all my medications."
+            }
+        ]
+    }
+    </script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="./assets/images/ChatGPT Image Aug 15, 2025, 07_53_30 PM.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./assets/images/ChatGPT Image Aug 15, 2025, 07_53_30 PM.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/images/ChatGPT Image Aug 15, 2025, 07_53_30 PM.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./assets/images/ChatGPT Image Aug 15, 2025, 07_53_30 PM.png">
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            500: '#6366f1',
+                            600: '#4f46e5'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        .testimonial-carousel {
+            position: relative;
+            min-height: 300px;
+        }
+        
+        .testimonial-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s ease-in-out;
+        }
+        
+        .testimonial-slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .testimonial-slide.prev {
+            transform: translateX(-100%);
+        }
+        
+        .carousel-indicator.active {
+            background-color: rgba(255, 255, 255, 0.8) !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+    <!-- Navigation -->
+    <header class="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-slate-200 z-50">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="index.html">
+                        <img src="./assets/images/ChatGPT Image Aug 15, 2025, 07_53_30 PM.png" alt="Upington Mainz Logo" class="w-8 h-8 ml-2">
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="features.html" class="text-slate-700 hover:text-indigo-600 transition-colors">Features</a>
+                    <a href="testimonials.html" class="text-indigo-600 font-medium">Testimonials</a>
+                    <a href="pricing.html" class="text-slate-700 hover:text-indigo-600 transition-colors">Pricing</a>
+                    <a href="book.html" class="text-slate-700 hover:text-indigo-600 transition-colors">Book Appointment</a>
+                    <a href="index.html#compare" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">Compare Plans</a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="p-2 rounded-md text-slate-700 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="hidden md:hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-slate-200">
+                    <a href="/features.html" class="block px-3 py-2 text-slate-700 hover:text-indigo-600">Features</a>
+                    <a href="/testimonials.html" class="block px-3 py-2 text-indigo-600 font-medium">Testimonials</a>
+                    <a href="/pricing.html" class="block px-3 py-2 text-slate-700 hover:text-indigo-600">Pricing</a>
+                    <a href="book.html" class="block px-3 py-2 text-slate-700 hover:text-indigo-600">Book Appointment</a>
+                    <a href="index.html#compare" class="block px-3 py-2 bg-indigo-600 text-white rounded-lg mt-2">Compare Plans</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="pt-16">
+        <!-- Header Section -->
+        <section class="bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-800 text-white py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6">Testimonials</h1>
+                    <p class="text-xl text-slate-300 max-w-3xl mx-auto">
+                        Real stories from clients we've helped.
+                    </p>
+                </div>
+                <div class="max-w-4xl mx-auto">
+                    <!-- Testimonial Carousel -->
+                    <div class="relative overflow-hidden rounded-2xl shadow-2xl bg-white/10 backdrop-blur-sm p-8">
+                        <div class="testimonial-carousel" id="testimonialCarousel">
+                            <!-- Slide 1 -->
+                            <div class="testimonial-slide active">
+                                <div class="text-center">
+                                    <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 mx-auto mb-4 flex items-center justify-center text-white font-bold text-xl">
+                                        SM
+                                    </div>
+                                    <blockquote class="text-xl text-white mb-4">
+                                        "Upington Mainz helped us find the perfect health insurance plan for our growing family. Their expertise saved us both time and money!"
+                                    </blockquote>
+                                    <p class="text-slate-300 font-semibold">Sarah Mitchell</p>
+                                    <p class="text-slate-400 text-sm">Young Family, Atlanta GA</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Slide 2 -->
+                            <div class="testimonial-slide">
+                                <div class="text-center">
+                                    <div class="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-blue-500 mx-auto mb-4 flex items-center justify-center text-white font-bold text-xl">
+                                        RJ
+                                    </div>
+                                    <blockquote class="text-xl text-white mb-4">
+                                        "As a senior looking for Medicare coverage, I was overwhelmed by all the options. Brettanya guided me through everything and found a plan that covers all my medications."
+                                    </blockquote>
+                                    <p class="text-slate-300 font-semibold">Robert Johnson</p>
+                                    <p class="text-slate-400 text-sm">Senior, Marietta GA</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Slide 3 -->
+                            <div class="testimonial-slide">
+                                <div class="text-center">
+                                    <div class="w-20 h-20 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 mx-auto mb-4 flex items-center justify-center text-white font-bold text-xl">
+                                        MR
+                                    </div>
+                                    <blockquote class="text-xl text-white mb-4">
+                                        "The Medicare guidance was invaluable. They explained everything clearly and helped us navigate the complex options with confidence."
+                                    </blockquote>
+                                    <p class="text-slate-300 font-semibold">Maria Rodriguez</p>
+                                    <p class="text-slate-400 text-sm">Retiree, Savannah GA</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Carousel Controls -->
+                        <button class="carousel-prev absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <button class="carousel-next absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Carousel Indicators -->
+                        <div class="flex justify-center mt-6 space-x-2">
+                            <button class="carousel-indicator active w-3 h-3 rounded-full bg-white/50" data-slide="0"></button>
+                            <button class="carousel-indicator w-3 h-3 rounded-full bg-white/30" data-slide="1"></button>
+                            <button class="carousel-indicator w-3 h-3 rounded-full bg-white/30" data-slide="2"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Testimonials -->
+        <section class="py-16 sm:py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- Testimonial 1 -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400">
+                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                            </div>
+                        </div>
+                        <blockquote class="text-slate-700 text-lg mb-6 italic">
+                            "They made Medicare easy to understand and pick."
+                        </blockquote>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-indigo-600 font-semibold text-lg">MJ</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-900">M. Johnson</p>
+                                <p class="text-sm text-slate-600">Medicare Advantage</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testimonial 2 -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400">
+                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                            </div>
+                        </div>
+                        <blockquote class="text-slate-700 text-lg mb-6 italic">
+                            "We found a family plan that fits our budget."
+                        </blockquote>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-indigo-600 font-semibold text-lg">SP</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-900">S. Patel</p>
+                                <p class="text-sm text-slate-600">Marketplace Plan</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testimonial 3 -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400">
+                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                            </div>
+                        </div>
+                        <blockquote class="text-slate-700 text-lg mb-6 italic">
+                            "Professional, responsive, and kind at every step."
+                        </blockquote>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-indigo-600 font-semibold text-lg">RW</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-900">R. Williams</p>
+                                <p class="text-sm text-slate-600">Life Insurance</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Additional Testimonials -->
+        <section class="bg-slate-50 py-16 sm:py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                        More Success Stories
+                    </h2>
+                    <p class="text-xl text-slate-600 max-w-3xl mx-auto">
+                        Discover how we've helped clients across different insurance needs.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Detailed Testimonial 1 -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="flex text-yellow-400 mr-4">
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            </div>
+                            <span class="text-sm text-slate-600">Medicare Supplement</span>
+                        </div>
+                        <blockquote class="text-slate-700 text-lg mb-6 italic">
+                            "I was completely confused about Medicare until I spoke with Brettanya. She explained the difference between Medicare Advantage and Medigap in simple terms I could understand. Now I have coverage that gives me peace of mind without breaking the bank."
+                        </blockquote>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-indigo-600 font-semibold text-lg">DM</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-900">D. Martinez</p>
+                                <p class="text-sm text-slate-600">Atlanta, GA</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Testimonial 2 -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="flex text-yellow-400 mr-4">
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            </div>
+                            <span class="text-sm text-slate-600">Whole Life Insurance</span>
+                        </div>
+                        <blockquote class="text-slate-700 text-lg mb-6 italic">
+                            "As a new parent, I knew I needed life insurance but didn't know where to start. The team helped me understand my options and find affordable whole life coverage that builds cash value while protecting my family's future. The whole process was stress-free."
+                        </blockquote>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-indigo-600 font-semibold text-lg">AC</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-900">A. Chen</p>
+                                <p class="text-sm text-slate-600">Marietta, GA</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Testimonial 3 -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="flex text-yellow-400 mr-4">
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            </div>
+                            <span class="text-sm text-slate-600">Health Insurance</span>
+                        </div>
+                        <blockquote class="text-slate-700 text-lg mb-6 italic">
+                            "After losing my job and employer health insurance, I was panicking about coverage for my family. Upington Mainz helped us navigate the marketplace and find a plan with great benefits that we could actually afford."
+                        </blockquote>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-indigo-600 font-semibold text-lg">KT</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-900">K. Thompson</p>
+                                <p class="text-sm text-slate-600">Decatur, GA</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Testimonial 4 -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="flex text-yellow-400 mr-4">
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            </div>
+                            <span class="text-sm text-slate-600">Medicare Advantage</span>
+                        </div>
+                        <blockquote class="text-slate-700 text-lg mb-6 italic">
+                            "What I appreciate most is the ongoing support. Even after I enrolled in my Medicare plan, they've been there to answer questions about my coverage and help with any issues. It's like having a personal insurance advocate."
+                        </blockquote>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-indigo-600 font-semibold text-lg">BL</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-900">B. Lewis</p>
+                                <p class="text-sm text-slate-600">Roswell, GA</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Testimonial 5 -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="flex text-yellow-400 mr-4">
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            </div>
+                            <span class="text-sm text-slate-600">Life Insurance Coverage</span>
+                        </div>
+                        <blockquote class="text-slate-700 text-lg mb-6 italic">
+                            "After my husband's passing, I realized how important life insurance is. Brettanya helped me find an affordable policy that gives me peace of mind knowing my children will be financially secure. The application process was smooth and she explained everything clearly."
+                        </blockquote>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-indigo-600 font-semibold text-lg">JG</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-900">J. Garcia</p>
+                                <p class="text-sm text-slate-600">Kennesaw, GA</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Testimonial 6 -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="flex text-yellow-400 mr-4">
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            </div>
+                            <span class="text-sm text-slate-600">Medicare Supplement</span>
+                        </div>
+                        <blockquote class="text-slate-700 text-lg mb-6 italic">
+                            "After my husband passed away, I was overwhelmed dealing with Medicare alone. Brettanya took the time to explain all my options and helped me find a supplement plan that covers what I need. She treated me like family during a difficult time."
+                        </blockquote>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-indigo-600 font-semibold text-lg">EB</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-900">E. Brown</p>
+                                <p class="text-sm text-slate-600">Alpharetta, GA</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Google Reviews Section -->
+        <section class="py-16 sm:py-20 bg-gradient-to-br from-blue-50 to-indigo-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                        Find Us on Google Reviews
+                    </h2>
+                    <p class="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
+                        Don't just take our word for it - see what our clients are saying on Google!
+                    </p>
+                    <div class="flex items-center justify-center space-x-2 mb-6">
+                        <div class="flex text-yellow-400">
+                            <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                            <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                            <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                            <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                            <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                        </div>
+                        <span class="text-2xl font-bold text-slate-900">4.9/5</span>
+                        <span class="text-slate-600">(50+ Google Reviews)</span>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Google Review 1 -->
+                    <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400 mr-3">
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            </div>
+                            <svg class="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                        </div>
+                        <blockquote class="text-slate-700 mb-4">
+                            "Excellent service! Brettanya helped me understand Medicare options and found me the perfect plan. Highly recommend!"
+                        </blockquote>
+                        <div class="flex items-center text-sm text-slate-600">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-blue-600 font-semibold text-xs">TC</span>
+                            </div>
+                            <div>
+                                <p class="font-medium">T. Cooper</p>
+                                <p class="text-xs">2 weeks ago</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Google Review 2 -->
+                    <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400 mr-3">
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            </div>
+                            <svg class="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                        </div>
+                        <blockquote class="text-slate-700 mb-4">
+                            "Professional, knowledgeable, and patient. Made the whole insurance process easy to understand. Great experience!"
+                        </blockquote>
+                        <div class="flex items-center text-sm text-slate-600">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-blue-600 font-semibold text-xs">LR</span>
+                            </div>
+                            <div>
+                                <p class="font-medium">L. Roberts</p>
+                                <p class="text-xs">1 month ago</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Google Review 3 -->
+                    <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400 mr-3">
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            </div>
+                            <svg class="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                        </div>
+                        <blockquote class="text-slate-700 mb-4">
+                            "Found the perfect health insurance for my family. Saved us money and got better coverage. Thank you!"
+                        </blockquote>
+                        <div class="flex items-center text-sm text-slate-600">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-blue-600 font-semibold text-xs">MH</span>
+                            </div>
+                            <div>
+                                <p class="font-medium">M. Harris</p>
+                                <p class="text-xs">3 weeks ago</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Google Review 4 -->
+                    <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400 mr-3">
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            </div>
+                            <svg class="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                        </div>
+                        <blockquote class="text-slate-700 mb-4">
+                            "Outstanding customer service! Always available to answer questions and explain options clearly."
+                        </blockquote>
+                        <div class="flex items-center text-sm text-slate-600">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-blue-600 font-semibold text-xs">JW</span>
+                            </div>
+                            <div>
+                                <p class="font-medium">J. Wilson</p>
+                                <p class="text-xs">1 week ago</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Google Review 5 -->
+                    <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400 mr-3">
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            </div>
+                            <svg class="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                        </div>
+                        <blockquote class="text-slate-700 mb-4">
+                            "Brettanya went above and beyond to help me transition from employer insurance to Medicare. Stress-free process!"
+                        </blockquote>
+                        <div class="flex items-center text-sm text-slate-600">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-blue-600 font-semibold text-xs">DS</span>
+                            </div>
+                            <div>
+                                <p class="font-medium">D. Smith</p>
+                                <p class="text-xs">2 months ago</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Google Review 6 -->
+                    <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400 mr-3">
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            </div>
+                            <svg class="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                        </div>
+                        <blockquote class="text-slate-700 mb-4">
+                            "Trustworthy and reliable. Got my whole family covered with plans that actually work for our needs and budget."
+                        </blockquote>
+                        <div class="flex items-center text-sm text-slate-600">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-blue-600 font-semibold text-xs">AJ</span>
+                            </div>
+                            <div>
+                                <p class="font-medium">A. Johnson</p>
+                                <p class="text-xs">3 weeks ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-12">
+                    <a href="https://www.google.com/search?q=Upington+Mainz+Reviews" target="_blank" 
+                       class="inline-flex items-center bg-white text-indigo-600 px-8 py-4 rounded-lg border border-indigo-200 hover:bg-indigo-50 transition-colors font-semibold shadow-lg">
+                        <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        View All Google Reviews
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="py-16 sm:py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                        Trusted by Families Across Georgia
+                    </h2>
+                    <p class="text-xl text-slate-600 max-w-3xl mx-auto">
+                        Our commitment to excellent service shows in our results.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-4 gap-8">
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-indigo-600 mb-2">6+</div>
+                        <p class="text-slate-600">Years of Experience</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-indigo-600 mb-2">750+</div>
+                        <p class="text-slate-600">Families Served</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-indigo-600 mb-2">20+</div>
+                        <p class="text-slate-600">Insurance Partners</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-indigo-600 mb-2">4.9★</div>
+                        <p class="text-slate-600">Google Rating</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="bg-indigo-600 py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl font-bold text-white mb-4">Join Our Satisfied Clients</h2>
+                <p class="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
+                    Experience the personalized service and expert guidance that our clients rave about.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="book.html" class="bg-white text-indigo-600 px-8 py-3 rounded-lg hover:bg-slate-50 transition-colors font-semibold">
+                        Schedule Consultation
+                    </a>
+                    <a href="index.html#compare" class="border border-white text-white px-8 py-3 rounded-lg hover:bg-white hover:text-indigo-600 transition-colors font-semibold">
+                        Compare Plans
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="font-semibold text-lg mb-4">Contact</h3>
+                    <div class="space-y-2">
+                        <a href="tel:+14709133445" class="block text-slate-300 hover:text-white transition-colors">
+                            Phone: 470-913-3445
+                        </a>
+                        <a href="mailto:info@upingtonmainz.com" class="block text-slate-300 hover:text-white transition-colors">
+                            Email: info@upingtonmainz.com
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold text-lg mb-4">Social</h3>
+                    <div class="space-y-2">
+                        <a href="https://www.facebook.com/share/1CWPnYDeMd/?mibextid=wwXIfr" target="_blank" class="block text-slate-300 hover:text-white transition-colors">
+                            Facebook
+                        </a>
+                        <a href="https://www.instagram.com/brettanya_insurance_lady?igsh=dHJnb3RvanZqZnFx&utm_source=qr" target="_blank" class="block text-slate-300 hover:text-white transition-colors">
+                            Instagram
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold text-lg mb-4">Legal</h3>
+                    <div class="space-y-2">
+                        <a href="index.html#disclaimer" class="block text-slate-300 hover:text-white transition-colors">
+                            Disclaimer
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-slate-800 mt-8 pt-8 text-center">
+                <p class="text-slate-400">© Upington Mainz LLC. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // GSAP animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Animate testimonial cards on scroll
+        gsap.fromTo('.bg-white', {
+            y: 40,
+            opacity: 0
+        }, {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.1,
+            scrollTrigger: {
+                trigger: '.bg-white',
+                start: 'top 80%'
+            }
+        });
+
+        // Animate stats
+        gsap.fromTo('.text-4xl', {
+            opacity: 0,
+            scale: 0.5
+        }, {
+            opacity: 1,
+            scale: 1,
+            duration: 1,
+            stagger: 0.1,
+            scrollTrigger: {
+                trigger: '.text-4xl',
+                start: 'top 80%'
+            }
+        });
+
+        // Testimonial Carousel
+        class TestimonialCarousel {
+            constructor() {
+                this.currentSlide = 0;
+                this.slides = document.querySelectorAll('.testimonial-slide');
+                this.indicators = document.querySelectorAll('.carousel-indicator');
+                this.prevButton = document.querySelector('.carousel-prev');
+                this.nextButton = document.querySelector('.carousel-next');
+                
+                this.init();
+            }
+            
+            init() {
+                // Add event listeners
+                this.prevButton?.addEventListener('click', () => this.prevSlide());
+                this.nextButton?.addEventListener('click', () => this.nextSlide());
+                
+                this.indicators.forEach((indicator, index) => {
+                    indicator.addEventListener('click', () => this.goToSlide(index));
+                });
+                
+                // Auto-advance carousel
+                setInterval(() => this.nextSlide(), 5000);
+            }
+            
+            updateSlides() {
+                this.slides.forEach((slide, index) => {
+                    slide.classList.remove('active', 'prev');
+                    if (index === this.currentSlide) {
+                        slide.classList.add('active');
+                    } else if (index < this.currentSlide) {
+                        slide.classList.add('prev');
+                    }
+                });
+                
+                this.indicators.forEach((indicator, index) => {
+                    indicator.classList.toggle('active', index === this.currentSlide);
+                });
+            }
+            
+            nextSlide() {
+                this.currentSlide = (this.currentSlide + 1) % this.slides.length;
+                this.updateSlides();
+            }
+            
+            prevSlide() {
+                this.currentSlide = this.currentSlide === 0 ? this.slides.length - 1 : this.currentSlide - 1;
+                this.updateSlides();
+            }
+            
+            goToSlide(index) {
+                this.currentSlide = index;
+                this.updateSlides();
+            }
+        }
+        
+        // Initialize carousel when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new TestimonialCarousel();
+        });
+    </script>
+</body>
+</html>

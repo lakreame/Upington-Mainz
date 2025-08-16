@@ -26,6 +26,9 @@ function initializeApp() {
     
     // Initialize smooth scrolling
     initializeSmoothScrolling();
+    
+    // Initialize carousel
+    initializeCarousel();
 }
 
 // GSAP Animations
@@ -416,6 +419,156 @@ function initializeSmoothScrolling() {
     });
 }
 
+// Carousel functionality for Solutions Grid
+function initializeCarousel() {
+    const carousel = document.querySelector('.carousel-container');
+    if (!carousel) return;
+    
+    const slides = carousel.querySelectorAll('.carousel-slide');
+    const indicators = carousel.querySelectorAll('.carousel-indicator');
+    
+    if (slides.length === 0) return;
+    
+    let currentGroup = 0;
+    const totalGroups = 2; // We have 2 groups: Group 1 (first 3 cards) and Group 2 (last 2 cards)
+    
+    // Initialize carousel state
+    updateCarousel();
+    
+    // Indicator event listeners (optional - allows manual control)
+    indicators.forEach((indicator, index) => {
+        indicator.addEventListener('click', () => {
+            currentGroup = index;
+            updateCarousel();
+            resetAutoPlay(); // Reset the timer when user manually changes slide
+        });
+    });
+    
+    // Auto-play functionality - advance every 6 seconds
+    let autoPlayInterval;
+    
+    function startAutoPlay() {
+        autoPlayInterval = setInterval(() => {
+            currentGroup = (currentGroup + 1) % totalGroups;
+            updateCarousel();
+        }, 6000); // Change slide every 6 seconds - gives users time to read
+    }
+    
+    function stopAutoPlay() {
+        if (autoPlayInterval) {
+            clearInterval(autoPlayInterval);
+        }
+    }
+    
+    function resetAutoPlay() {
+        stopAutoPlay();
+        startAutoPlay();
+    }
+    
+    // Start auto-play
+    startAutoPlay();
+    
+    // Pause auto-play on hover, resume on leave
+    carousel.addEventListener('mouseenter', stopAutoPlay);
+    carousel.addEventListener('mouseleave', startAutoPlay);
+    
+    // Touch/swipe support for mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    carousel.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        stopAutoPlay(); // Stop auto-play during touch interaction
+    });
+    
+    carousel.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+        startAutoPlay(); // Resume auto-play after touch interaction
+    });
+    
+    function handleSwipe() {
+        const swipeThreshold = 50;
+        const diff = touchStartX - touchEndX;
+        
+        if (Math.abs(diff) > swipeThreshold) {
+            if (diff > 0) {
+                // Swipe left - next group
+                currentGroup = (currentGroup + 1) % totalGroups;
+            } else {
+                // Swipe right - previous group
+                currentGroup = (currentGroup - 1 + totalGroups) % totalGroups;
+            }
+            updateCarousel();
+        }
+    }
+    
+    // Update carousel display
+    function updateCarousel() {
+        // Calculate the offset for the current group
+        // We have 5 cards total: [Medicare, Life, Family, Annuities, Ancillary]
+        // Group 0: show cards 0-2 (Medicare, Life, Family)
+        // Group 1: show cards 2-4 (Family, Annuities, Ancillary) - overlap Family for continuity
+        let offset;
+        if (currentGroup === 0) {
+            offset = 0; // Show first 3 cards starting from position 0
+        } else {
+            // Move to show cards starting from position 2 (Family card)
+            // Since each card is ~33.33% width, move 2 cards = 66.67%
+            offset = -66.67; // This should show Family, Annuities, Ancillary
+        }
+        
+        // Move the carousel track
+        const track = carousel.querySelector('.carousel-track');
+        if (track) {
+            if (typeof gsap !== 'undefined') {
+                // Use GSAP for smooth animation if available
+                gsap.to(track, {
+                    duration: 0.5,
+                    x: `${offset}%`,
+                    ease: "power2.inOut"
+                });
+            } else {
+                // Fallback to CSS transform
+                track.style.transform = `translateX(${offset}%)`;
+                track.style.transition = 'transform 0.5s ease-in-out';
+            }
+        }
+        
+        // Update active indicator
+        indicators.forEach((indicator, index) => {
+            if (index === currentGroup) {
+                indicator.classList.add('bg-blue-600');
+                indicator.classList.remove('bg-gray-300');
+            } else {
+                indicator.classList.add('bg-gray-300');
+                indicator.classList.remove('bg-blue-600');
+            }
+        });
+    }
+    
+    // Keyboard navigation (optional)
+    document.addEventListener('keydown', (e) => {
+        // Only handle keys if carousel is in viewport
+        const rect = carousel.getBoundingClientRect();
+        const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+        
+        if (isVisible) {
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                currentGroup = (currentGroup - 1 + totalGroups) % totalGroups;
+                updateCarousel();
+                resetAutoPlay();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                currentGroup = (currentGroup + 1) % totalGroups;
+                updateCarousel();
+                resetAutoPlay();
+            }
+        }
+    });
+}
+
 // FAQ functionality (for pages that have FAQs)
 function initializeFAQ() {
     const faqButtons = document.querySelectorAll('.faq-button');
@@ -527,5 +680,6 @@ window.UpingtonMainz = {
     initializeFAQ,
     showFormSuccess,
     showFormError,
-    showFormLoading
+    showFormLoading,
+    initializeCarousel
 };
