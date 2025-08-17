@@ -851,24 +851,6 @@
             overlay.classList.remove('hidden');
         }
 
-        function showSection(sectionName) {
-            // Hide all sections
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.add('hidden');
-            });
-            
-            // Show selected section
-            document.getElementById(sectionName + '-section').classList.remove('hidden');
-            
-            // Update navigation
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            event.target.closest('.nav-item').classList.add('active');
-            
-            currentSection = sectionName;
-        }
-
         function updateStatus(elementId, message, type = 'info') {
             const element = document.getElementById(elementId);
             element.innerHTML = message;
@@ -956,15 +938,6 @@
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
                 // Fallback to zero counts
-                        'Accept': 'application/json;odata=verbose',
-                        'Authorization': 'Bearer ' + accessToken
-                    }
-                });
-                */
-
-            } catch (error) {
-                console.error('Error loading dashboard data:', error);
-                // Fallback to mock data
                 document.getElementById('total-clients').textContent = '0';
                 document.getElementById('appointments-today').textContent = '0';
                 document.getElementById('active-leads').textContent = '0';
@@ -1126,10 +1099,6 @@
                 } else {
                     leadsList.innerHTML = '<p class="text-red-600">SharePoint manager not initialized.</p>';
                 }
-                            <button onclick="editLead('${lead.id}')" class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
-                        </div>
-                    </div>
-                `).join('');
 
             } catch (error) {
                 console.error('Error loading leads:', error);
@@ -1352,6 +1321,15 @@
                 case 'policies':
                     loadPoliciesFromSharePoint();
                     break;
+                case 'form-submissions':
+                    loadFormSubmissions();
+                    break;
+                case 'analytics':
+                    loadAnalytics();
+                    break;
+                case 'dashboard':
+                    updateDashboardStats();
+                    break;
             }
         }
 
@@ -1494,7 +1472,7 @@
                 }
                 
                 updateStatus('sync-status', 
-                    `✅ Sync completed!<br>` +
+                    'Sync completed!<br>' +
                     `Synced: ${totalSynced} items<br>` +
                     `Errors: ${totalErrors} items`, 
                     totalErrors === 0 ? 'success' : 'warning'
@@ -1503,7 +1481,7 @@
             } catch (error) {
                 console.error('Sync to SharePoint error:', error);
                 updateStatus('sync-status', 
-                    '❌ Failed to sync to SharePoint<br>' +
+                    'Failed to sync to SharePoint<br>' +
                     'Error: ' + error.message, 
                     'error'
                 );
@@ -1541,7 +1519,7 @@
                 }
                 
                 updateStatus('sync-status', 
-                    `✅ Data loaded from SharePoint!<br>` +
+                    'Data loaded from SharePoint!<br>' +
                     `Loaded: ${totalLoaded} items<br>` +
                     `Data is now available in the dashboard.`, 
                     'success'
@@ -1553,7 +1531,7 @@
             } catch (error) {
                 console.error('Sync from SharePoint error:', error);
                 updateStatus('sync-status', 
-                    '❌ Failed to load from SharePoint<br>' +
+                    'Failed to load from SharePoint<br>' +
                     'Error: ' + error.message, 
                     'error'
                 );
@@ -1574,6 +1552,12 @@
                 case 'policies':
                     loadPoliciesFromSharePoint();
                     break;
+                case 'form-submissions':
+                    loadFormSubmissions();
+                    break;
+                case 'analytics':
+                    loadAnalytics();
+                    break;
                 case 'dashboard':
                     updateDashboardStats();
                     break;
@@ -1586,12 +1570,12 @@
                 if (sharePointManager) {
                     const status = sharePointManager.getConnectionStatus();
                     const connectionStatus = sharePointManager.isConnected() ? 'connected' : 'local mode';
-                    modeElement.textContent = `• Mode: ${status.mode} (${connectionStatus})`;
+                    modeElement.textContent = `Mode: ${status.mode} (${connectionStatus})`;
                     
                     // Update mode color based on status
                     modeElement.className = sharePointManager.isConnected() ? 'text-green-700' : 'text-blue-700';
                 } else {
-                    modeElement.textContent = '• Mode: Initializing...';
+                    modeElement.textContent = 'Mode: Initializing...';
                     modeElement.className = 'text-gray-700';
                 }
             }
@@ -1646,6 +1630,50 @@
                     'error'
                 );
             }
+        }
+
+        function loadFormSubmissions() {
+            // Load form submissions data
+            const submissions = JSON.parse(localStorage.getItem('formSubmissions') || '[]');
+            
+            // Update stats
+            document.getElementById('total-submissions').textContent = submissions.length;
+            
+            const today = new Date().toDateString();
+            const todaySubmissions = submissions.filter(s => new Date(s.date).toDateString() === today);
+            document.getElementById('today-submissions').textContent = todaySubmissions.length;
+            
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            const weekSubmissions = submissions.filter(s => new Date(s.date) >= weekAgo);
+            document.getElementById('week-submissions').textContent = weekSubmissions.length;
+            
+            // Display submissions list
+            const list = document.getElementById('submissions-list');
+            if (submissions.length === 0) {
+                list.innerHTML = '<p class="text-gray-600 text-center py-8">No form submissions yet. Submissions from your website will appear here.</p>';
+            } else {
+                list.innerHTML = submissions.map(submission => `
+                    <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="font-medium text-gray-900">${submission.name}</h4>
+                                <p class="text-sm text-gray-600">${submission.email} | ${submission.phone}</p>
+                                <p class="text-sm text-gray-700 mt-2">${submission.message || 'No message'}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-gray-500">${new Date(submission.date).toLocaleDateString()}</p>
+                                <span class="inline-block px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">New</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function loadAnalytics() {
+            // Analytics placeholder - would integrate with Google Analytics, SharePoint analytics, etc.
+            console.log('Analytics section loaded');
         }
 
         // Navigation styles
@@ -1718,6 +1746,23 @@
                 border-radius: 0.5rem;
                 box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
                 transition: all 0.2s ease;
+            }
+            
+            .stat-card:hover {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                transform: translateY(-1px);
+            }
+            
+            /* Responsive adjustments */
+            @media (max-width: 1024px) {
+                .dashboard-grid {
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 1rem;
+                }
+            }
+            
+            @media (max-width: 768px) {
+                .dashboard-grid
             }
             
             .stat-card:hover {
