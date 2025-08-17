@@ -888,6 +888,13 @@
         function loadDashboardData() {
             // Load real data from SharePoint or localStorage
             loadDashboardFromSharePoint();
+            // Also load form submissions for the convert to lead functionality
+            loadFormSubmissions();
+        }
+
+        function updateDashboardStats() {
+            // Alias for loadDashboardData to maintain compatibility
+            loadDashboardData();
         }
 
         async function loadDashboardFromSharePoint() {
@@ -1627,19 +1634,19 @@
         }
 
         function loadFormSubmissions() {
-            // Load form submissions data
-            const submissions = JSON.parse(localStorage.getItem('formSubmissions') || '[]');
+            // Load form submissions data from book.html (stored in 'appointmentSubmissions')
+            const submissions = JSON.parse(localStorage.getItem('appointmentSubmissions') || '[]');
             
             // Update stats
             document.getElementById('total-submissions').textContent = submissions.length;
             
             const today = new Date().toDateString();
-            const todaySubmissions = submissions.filter(s => new Date(s.date).toDateString() === today);
+            const todaySubmissions = submissions.filter(s => new Date(s.submittedAt || s.date).toDateString() === today);
             document.getElementById('today-submissions').textContent = todaySubmissions.length;
             
             const weekAgo = new Date();
             weekAgo.setDate(weekAgo.getDate() - 7);
-            const weekSubmissions = submissions.filter(s => new Date(s.date) >= weekAgo);
+            const weekSubmissions = submissions.filter(s => new Date(s.submittedAt || s.date) >= weekAgo);
             document.getElementById('week-submissions').textContent = weekSubmissions.length;
             
             // Display submissions list
@@ -1651,17 +1658,106 @@
                     <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
                         <div class="flex justify-between items-start">
                             <div>
-                                <h4 class="font-medium text-gray-900">${submission.name}</h4>
+                                <h4 class="font-medium text-gray-900">${submission.clientName || submission.name}</h4>
                                 <p class="text-sm text-gray-600">${submission.email} | ${submission.phone}</p>
-                                <p class="text-sm text-gray-700 mt-2">${submission.message || 'No message'}</p>
+                                <div class="text-sm text-gray-700 mt-2">
+                                    <p><strong>Appointment Type:</strong> ${submission.appointmentType || 'Not specified'}</p>
+                                    <p><strong>Meeting Type:</strong> ${submission.meetingType || 'Not specified'}</p>
+                                    <p><strong>Preferred Date:</strong> ${submission.preferredDate || 'Not specified'}</p>
+                                    <p><strong>Preferred Time:</strong> ${submission.preferredTime || 'Not specified'}</p>
+                                    <p><strong>County:</strong> ${submission.county || 'Not specified'}</p>
+                                    ${submission.address ? `<p><strong>Address:</strong> ${submission.address}</p>` : ''}
+                                </div>
                             </div>
                             <div class="text-right">
-                                <p class="text-xs text-gray-500">${new Date(submission.date).toLocaleDateString()}</p>
+                                <p class="text-xs text-gray-500">${new Date(submission.submittedAt || submission.date).toLocaleDateString()}</p>
                                 <span class="inline-block px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">New</span>
+                                <div class="mt-2">
+                                    <button onclick="convertToLead('${submission.id}')" class="bg-green-600 text-white text-xs px-2 py-1 rounded hover:bg-green-700">
+                                        Convert to Lead
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 `).join('');
+            }
+        }
+
+        async function convertToLead(submissionId) {
+            try {
+                console.log('🔄 Converting submission to lead:', submissionId);
+                
+                // Get the submission from localStorage
+                const submissions = JSON.parse(localStorage.getItem('appointmentSubmissions') || '[]');
+                const submission = submissions.find(s => s.id === submissionId || s.id === parseInt(submissionId));
+                
+                if (!submission) {
+                    alert('Submission not found');
+                    return;
+                }
+
+                // Create lead data from submission
+                const leadData = {
+                    Title: submission.clientName,
+                    Email: submission.email,
+                    Phone: submission.phone,
+                    Source: 'Website Form',
+                    InterestType: submission.appointmentType,
+                    Notes: `Meeting Type: ${submission.meetingType}\nPreferred Date: ${submission.preferredDate} ${submission.preferredTime}\nAddress: ${submission.address}\nCounty: ${submission.county}`,
+                    Status: 'New Lead'
+                };
+
+                // If SharePoint is available, create the lead there
+                if (sharePointManager && sharePointManager.isConnected()) {
+                    console.log('📊 Creating lead in SharePoint...');
+                    await sharePointManager.createLead(leadData);
+                    console.log('✅ Lead created successfully');
+                    
+                    // Also create an appointment request
+                    const appointmentData = {
+                        Title: `${submission.appointmentType} Consultation - ${submission.clientName}`,
+                        ClientName: submission.clientName,
+                        ClientEmail: submission.email,
+                        AppointmentDate: submission.preferredDate,
+                        AppointmentTime: submission.preferredTime,
+                        Method: submission.meetingType,
+                        Types: submission.appointmentType,
+                        Status: 'Scheduled',
+                        Notes: `**PENDING APPROVAL**\nPhone: ${submission.phone}\nAddress: ${submission.address}\nCounty: ${submission.county}\nConverted from website form submission\nSubmitted at: ${submission.submittedAt}`
+                    };
+
+                    await sharePointManager.createAppointment(appointmentData);
+                    console.log('✅ Appointment request created successfully');
+                    
+                    alert('Lead and appointment request created successfully!');
+                } else {
+                    // If no SharePoint, copy to clipboard
+                    const leadInfo = `
+Client: ${submission.clientName}
+Email: ${submission.email}
+Phone: ${submission.phone}
+Interest: ${submission.appointmentType}
+Meeting: ${submission.meetingType}
+Preferred: ${submission.preferredDate} ${submission.preferredTime}
+Address: ${submission.address}
+County: ${submission.county}
+                    `;
+                    
+                    navigator.clipboard.writeText(leadInfo);
+                    alert('Lead information copied to clipboard for manual entry');
+                }
+
+                // Remove the submission from localStorage
+                const updatedSubmissions = submissions.filter(s => s.id !== submissionId && s.id !== parseInt(submissionId));
+                localStorage.setItem('appointmentSubmissions', JSON.stringify(updatedSubmissions));
+                
+                // Refresh the form submissions display
+                loadFormSubmissions();
+                
+            } catch (error) {
+                console.error('Error converting to lead:', error);
+                alert('Failed to convert to lead. Please try again.');
             }
         }
 
