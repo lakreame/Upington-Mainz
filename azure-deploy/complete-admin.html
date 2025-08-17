@@ -100,7 +100,7 @@
             <div class="px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <div class="flex items-center">
-                        <button id="sidebar-toggle" class="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
+                        <button id="sidebar-toggle" class="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
@@ -114,8 +114,10 @@
                                 <span class="text-sm text-gray-600">Connecting...</span>
                             </div>
                         </div>
-                        <span id="welcome-user" class="text-gray-700"></span>
-                        <button id="logout-btn" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
+                        <span id="welcome-user" class="text-gray-700 hidden sm:block"></span>
+                        <button id="logout-btn" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors text-sm">
+                            Logout
+                        </button>
                             Logout
                         </button>
                     </div>
@@ -123,52 +125,77 @@
             </div>
         </nav>
 
-        <div class="flex">
+        <div class="flex h-screen">
             <!-- Sidebar -->
-            <div id="sidebar" class="sidebar bg-white shadow-sm h-screen">
+            <div id="sidebar" class="sidebar fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-0">
+                <!-- Sidebar Header -->
+                <div class="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+                    <span class="text-lg font-semibold text-gray-900 sidebar-title">Navigation</span>
+                    <button id="sidebar-close" class="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Navigation Items -->
                 <div class="p-4 space-y-2">
-                    <a href="#" onclick="showSection('dashboard')" class="nav-item active flex items-center px-3 py-2 text-sm font-medium rounded-md">
-                        <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="#" onclick="showSection('dashboard')" class="nav-item active flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors">
+                        <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
                         </svg>
                         <span class="nav-text">Dashboard</span>
                     </a>
-                    <a href="#" onclick="showSection('clients')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md">
-                        <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="#" onclick="showSection('clients')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors">
+                        <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                         </svg>
                         <span class="nav-text">Clients</span>
                     </a>
-                    <a href="#" onclick="showSection('appointments')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md">
-                        <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="#" onclick="showSection('appointments')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors">
+                        <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v16a2 2 0 002 2z" />
                         </svg>
                         <span class="nav-text">Appointments</span>
                     </a>
-                    <a href="#" onclick="showSection('leads')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md">
-                        <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="#" onclick="showSection('leads')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors">
+                        <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                         <span class="nav-text">Leads</span>
                     </a>
-                    <a href="#" onclick="showSection('policies')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md">
-                        <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="#" onclick="showSection('policies')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors">
+                        <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <span class="nav-text">Policies</span>
                     </a>
-                    <a href="#" onclick="showSection('sharepoint-test')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md">
-                        <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="#" onclick="showSection('sharepoint-test')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors">
+                        <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         <span class="nav-text">SharePoint Test</span>
                     </a>
                 </div>
+
+                <!-- Minimize Toggle for Desktop -->
+                <div class="hidden md:block absolute bottom-4 left-4">
+                    <button id="sidebar-minimize" class="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 transition-colors" title="Minimize sidebar">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
+            <!-- Sidebar Overlay for Mobile -->
+            <div id="sidebar-overlay" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-20 md:hidden hidden"></div>
+
             <!-- Main Content -->
-            <div id="main-content" class="main-content flex-1 p-6">
+            <div id="main-content" class="main-content flex-1 flex flex-col min-w-0 overflow-hidden">
+                <div class="flex-1 relative z-0 flex overflow-hidden">
+                    <main class="flex-1 relative z-0 overflow-y-auto focus:outline-none p-4 md:p-6">
                 <!-- Dashboard Section -->
                 <div id="dashboard-section" class="section">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">Dashboard Overview</h2>
@@ -298,30 +325,208 @@
                 <!-- Other sections will be added here -->
                 <div id="clients-section" class="section hidden">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">Client Management</h2>
+                    
+                    <!-- Add New Client Button -->
+                    <div class="mb-6">
+                        <button onclick="showAddClientForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                            Add New Client
+                        </button>
+                        <button onclick="loadClientsFromSharePoint()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg ml-2">
+                            Refresh from SharePoint
+                        </button>
+                    </div>
+
+                    <!-- Add Client Form -->
+                    <div id="add-client-form" class="bg-white rounded-lg shadow-sm p-6 mb-6 hidden">
+                        <h3 class="text-lg font-medium mb-4">Add New Client</h3>
+                        <form id="client-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="client-name" placeholder="Full Name" class="border rounded-lg px-3 py-2" required>
+                            <input type="email" id="client-email" placeholder="Email" class="border rounded-lg px-3 py-2" required>
+                            <input type="tel" id="client-phone" placeholder="Phone" class="border rounded-lg px-3 py-2">
+                            <input type="date" id="client-dob" placeholder="Date of Birth" class="border rounded-lg px-3 py-2">
+                            <textarea id="client-address" placeholder="Address" class="border rounded-lg px-3 py-2 md:col-span-2" rows="2"></textarea>
+                            <select id="client-status" class="border rounded-lg px-3 py-2">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Prospect">Prospect</option>
+                            </select>
+                            <div class="md:col-span-2">
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mr-2">Add Client</button>
+                                <button type="button" onclick="hideAddClientForm()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Clients List -->
                     <div class="bg-white rounded-lg shadow-sm p-6">
-                        <p class="text-gray-600">Client management features coming soon...</p>
+                        <h3 class="text-lg font-medium mb-4">Client List</h3>
+                        <div id="clients-list" class="space-y-3">
+                            <p class="text-gray-600">Loading clients...</p>
+                        </div>
                     </div>
                 </div>
 
                 <div id="appointments-section" class="section hidden">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">Appointment Management</h2>
+                    
+                    <!-- Add New Appointment Button -->
+                    <div class="mb-6">
+                        <button onclick="showAddAppointmentForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                            Schedule Appointment
+                        </button>
+                        <button onclick="loadAppointmentsFromSharePoint()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg ml-2">
+                            Refresh from SharePoint
+                        </button>
+                    </div>
+
+                    <!-- Add Appointment Form -->
+                    <div id="add-appointment-form" class="bg-white rounded-lg shadow-sm p-6 mb-6 hidden">
+                        <h3 class="text-lg font-medium mb-4">Schedule New Appointment</h3>
+                        <form id="appointment-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="appointment-client" placeholder="Client Name" class="border rounded-lg px-3 py-2" required>
+                            <input type="datetime-local" id="appointment-datetime" class="border rounded-lg px-3 py-2" required>
+                            <select id="appointment-type" class="border rounded-lg px-3 py-2">
+                                <option value="Consultation">Consultation</option>
+                                <option value="Policy Review">Policy Review</option>
+                                <option value="Claims Discussion">Claims Discussion</option>
+                                <option value="Follow-up">Follow-up</option>
+                            </select>
+                            <select id="appointment-status" class="border rounded-lg px-3 py-2">
+                                <option value="Scheduled">Scheduled</option>
+                                <option value="Confirmed">Confirmed</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                            <textarea id="appointment-notes" placeholder="Notes" class="border rounded-lg px-3 py-2 md:col-span-2" rows="3"></textarea>
+                            <div class="md:col-span-2">
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mr-2">Schedule</button>
+                                <button type="button" onclick="hideAddAppointmentForm()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Appointments List -->
                     <div class="bg-white rounded-lg shadow-sm p-6">
-                        <p class="text-gray-600">Appointment management features coming soon...</p>
+                        <h3 class="text-lg font-medium mb-4">Today's Appointments</h3>
+                        <div id="appointments-list" class="space-y-3">
+                            <p class="text-gray-600">Loading appointments...</p>
+                        </div>
                     </div>
                 </div>
 
                 <div id="leads-section" class="section hidden">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">Lead Management</h2>
+                    
+                    <!-- Add New Lead Button -->
+                    <div class="mb-6">
+                        <button onclick="showAddLeadForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                            Add New Lead
+                        </button>
+                        <button onclick="loadLeadsFromSharePoint()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg ml-2">
+                            Refresh from SharePoint
+                        </button>
+                    </div>
+
+                    <!-- Add Lead Form -->
+                    <div id="add-lead-form" class="bg-white rounded-lg shadow-sm p-6 mb-6 hidden">
+                        <h3 class="text-lg font-medium mb-4">Add New Lead</h3>
+                        <form id="lead-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="lead-name" placeholder="Lead Name" class="border rounded-lg px-3 py-2" required>
+                            <input type="email" id="lead-email" placeholder="Email" class="border rounded-lg px-3 py-2">
+                            <input type="tel" id="lead-phone" placeholder="Phone" class="border rounded-lg px-3 py-2">
+                            <select id="lead-source" class="border rounded-lg px-3 py-2">
+                                <option value="Website">Website</option>
+                                <option value="Referral">Referral</option>
+                                <option value="Social Media">Social Media</option>
+                                <option value="Advertisement">Advertisement</option>
+                                <option value="Cold Call">Cold Call</option>
+                            </select>
+                            <select id="lead-interest" class="border rounded-lg px-3 py-2">
+                                <option value="Life Insurance">Life Insurance</option>
+                                <option value="Health Insurance">Health Insurance</option>
+                                <option value="Auto Insurance">Auto Insurance</option>
+                                <option value="Home Insurance">Home Insurance</option>
+                                <option value="Business Insurance">Business Insurance</option>
+                            </select>
+                            <select id="lead-status" class="border rounded-lg px-3 py-2">
+                                <option value="New">New</option>
+                                <option value="Contacted">Contacted</option>
+                                <option value="Qualified">Qualified</option>
+                                <option value="Proposal Sent">Proposal Sent</option>
+                                <option value="Closed Won">Closed Won</option>
+                                <option value="Closed Lost">Closed Lost</option>
+                            </select>
+                            <textarea id="lead-notes" placeholder="Notes" class="border rounded-lg px-3 py-2 md:col-span-2" rows="3"></textarea>
+                            <div class="md:col-span-2">
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mr-2">Add Lead</button>
+                                <button type="button" onclick="hideAddLeadForm()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Leads List -->
                     <div class="bg-white rounded-lg shadow-sm p-6">
-                        <p class="text-gray-600">Lead management features coming soon...</p>
+                        <h3 class="text-lg font-medium mb-4">Active Leads</h3>
+                        <div id="leads-list" class="space-y-3">
+                            <p class="text-gray-600">Loading leads...</p>
+                        </div>
                     </div>
                 </div>
 
                 <div id="policies-section" class="section hidden">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">Policy Management</h2>
-                    <div class="bg-white rounded-lg shadow-sm p-6">
-                        <p class="text-gray-600">Policy management features coming soon...</p>
+                    
+                    <!-- Add New Policy Button -->
+                    <div class="mb-6">
+                        <button onclick="showAddPolicyForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                            Add New Policy
+                        </button>
+                        <button onclick="loadPoliciesFromSharePoint()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg ml-2">
+                            Refresh from SharePoint
+                        </button>
                     </div>
+
+                    <!-- Add Policy Form -->
+                    <div id="add-policy-form" class="bg-white rounded-lg shadow-sm p-6 mb-6 hidden">
+                        <h3 class="text-lg font-medium mb-4">Add New Policy</h3>
+                        <form id="policy-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="policy-number" placeholder="Policy Number" class="border rounded-lg px-3 py-2" required>
+                            <input type="text" id="policy-holder" placeholder="Policy Holder" class="border rounded-lg px-3 py-2" required>
+                            <select id="policy-type" class="border rounded-lg px-3 py-2">
+                                <option value="Life Insurance">Life Insurance</option>
+                                <option value="Health Insurance">Health Insurance</option>
+                                <option value="Auto Insurance">Auto Insurance</option>
+                                <option value="Home Insurance">Home Insurance</option>
+                                <option value="Business Insurance">Business Insurance</option>
+                            </select>
+                            <input type="number" id="policy-premium" placeholder="Monthly Premium" class="border rounded-lg px-3 py-2" step="0.01">
+                            <input type="date" id="policy-start" placeholder="Start Date" class="border rounded-lg px-3 py-2" required>
+                            <input type="date" id="policy-end" placeholder="End Date" class="border rounded-lg px-3 py-2">
+                            <select id="policy-status" class="border rounded-lg px-3 py-2">
+                                <option value="Active">Active</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Expired">Expired</option>
+                            </select>
+                            <input type="text" id="policy-carrier" placeholder="Insurance Carrier" class="border rounded-lg px-3 py-2">
+                            <textarea id="policy-notes" placeholder="Notes" class="border rounded-lg px-3 py-2 md:col-span-2" rows="3"></textarea>
+                            <div class="md:col-span-2">
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mr-2">Add Policy</button>
+                                <button type="button" onclick="hideAddPolicyForm()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Policies List -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-medium mb-4">Active Policies</h3>
+                        <div id="policies-list" class="space-y-3">
+                            <p class="text-gray-600">Loading policies...</p>
+                        </div>
+                    </div>
+                </div>
+
+                    </main>
                 </div>
             </div>
         </div>
@@ -357,6 +562,46 @@
             document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
             document.getElementById('test-sharepoint-connection').addEventListener('click', testSharePointConnection);
             document.getElementById('test-manual-sharepoint').addEventListener('click', testManualSharePoint);
+
+            // Add form submission handlers
+            document.getElementById('client-form').addEventListener('submit', handleAddClient);
+            document.getElementById('appointment-form').addEventListener('submit', handleAddAppointment);
+            document.getElementById('lead-form').addEventListener('submit', handleAddLead);
+            document.getElementById('policy-form').addEventListener('submit', handleAddPolicy);
+
+            // Add new sidebar event listeners
+            const sidebarClose = document.getElementById('sidebar-close');
+            const sidebarMinimize = document.getElementById('sidebar-minimize');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+            if (sidebarClose) {
+                sidebarClose.addEventListener('click', closeSidebar);
+            }
+            
+            if (sidebarMinimize) {
+                sidebarMinimize.addEventListener('click', toggleSidebar);
+            }
+            
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', closeSidebar);
+            }
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
+                
+                if (window.innerWidth >= 768) {
+                    // Desktop: ensure overlay is hidden and sidebar behavior is correct
+                    overlay.classList.add('hidden');
+                    sidebar.classList.remove('-translate-x-full', 'translate-x-0');
+                } else {
+                    // Mobile: ensure sidebar is hidden by default
+                    if (!sidebar.classList.contains('translate-x-0')) {
+                        sidebar.classList.add('-translate-x-full');
+                    }
+                }
+            });
         });
 
         function handleLogin(e) {
@@ -406,14 +651,57 @@
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
             const isMobile = window.innerWidth < 768;
             
             if (isMobile) {
-                sidebar.classList.toggle('sidebar-visible');
+                // Mobile: slide sidebar in/out
+                if (sidebar.classList.contains('-translate-x-full')) {
+                    openSidebar();
+                } else {
+                    closeSidebar();
+                }
             } else {
-                sidebar.classList.toggle('sidebar-collapsed');
-                document.getElementById('main-content').classList.toggle('main-content-collapsed');
+                // Desktop: minimize/expand sidebar
+                sidebar.classList.toggle('sidebar-minimized');
+                const navTexts = sidebar.querySelectorAll('.nav-text');
+                const sidebarTitle = sidebar.querySelector('.sidebar-title');
+                const minimizeBtn = sidebar.querySelector('#sidebar-minimize svg');
+                
+                if (sidebar.classList.contains('sidebar-minimized')) {
+                    // Minimized state
+                    navTexts.forEach(text => text.style.display = 'none');
+                    if (sidebarTitle) sidebarTitle.style.display = 'none';
+                    if (minimizeBtn) {
+                        minimizeBtn.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />';
+                    }
+                } else {
+                    // Expanded state
+                    navTexts.forEach(text => text.style.display = 'block');
+                    if (sidebarTitle) sidebarTitle.style.display = 'block';
+                    if (minimizeBtn) {
+                        minimizeBtn.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />';
+                    }
+                }
             }
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            sidebar.classList.add('-translate-x-full');
+            sidebar.classList.remove('translate-x-0');
+            overlay.classList.add('hidden');
+        }
+
+        function openSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            sidebar.classList.remove('-translate-x-full');
+            sidebar.classList.add('translate-x-0');
+            overlay.classList.remove('hidden');
         }
 
         function showSection(sectionName) {
@@ -469,14 +757,415 @@
         }
 
         function loadDashboardData() {
-            // Simulate loading data from SharePoint
-            // In a real implementation, this would fetch from SharePoint lists
+            // Load real data from SharePoint or localStorage
+            loadDashboardFromSharePoint();
+        }
+
+        async function loadDashboardFromSharePoint() {
+            try {
+                // First try to get data from localStorage (fallback)
+                const clients = JSON.parse(localStorage.getItem('clients') || '[]');
+                const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+                const leads = JSON.parse(localStorage.getItem('leads') || '[]');
+                const policies = JSON.parse(localStorage.getItem('policies') || '[]');
+
+                // Count today's appointments
+                const today = new Date().toISOString().split('T')[0];
+                const todayAppointments = appointments.filter(apt => 
+                    apt.datetime && apt.datetime.startsWith(today) && apt.status !== 'Cancelled'
+                );
+
+                // Count active leads
+                const activeLeads = leads.filter(lead => 
+                    lead.status && !['Closed Won', 'Closed Lost'].includes(lead.status)
+                );
+
+                // Count active policies
+                const activePolicies = policies.filter(policy => 
+                    policy.status === 'Active'
+                );
+
+                // Update dashboard stats
+                document.getElementById('total-clients').textContent = clients.length.toString();
+                document.getElementById('appointments-today').textContent = todayAppointments.length.toString();
+                document.getElementById('active-leads').textContent = activeLeads.length.toString();
+                document.getElementById('active-policies').textContent = activePolicies.length.toString();
+
+                console.log('Dashboard data loaded from localStorage');
+                
+                // In the future, this would make actual SharePoint API calls
+                // Example SharePoint REST API call structure:
+                /*
+                const response = await fetch(`${SHAREPOINT_CONFIG.siteUrl}/_api/web/lists/getbytitle('${SHAREPOINT_CONFIG.lists.clients}')/items`, {
+                    headers: {
+                        'Accept': 'application/json;odata=verbose',
+                        'Authorization': 'Bearer ' + accessToken
+                    }
+                });
+                */
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                // Fallback to mock data
+                document.getElementById('total-clients').textContent = '0';
+                document.getElementById('appointments-today').textContent = '0';
+                document.getElementById('active-leads').textContent = '0';
+                document.getElementById('active-policies').textContent = '0';
+            }
+        }
+
+        // Client Management Functions
+        function showAddClientForm() {
+            document.getElementById('add-client-form').classList.remove('hidden');
+        }
+
+        function hideAddClientForm() {
+            document.getElementById('add-client-form').classList.add('hidden');
+            document.getElementById('client-form').reset();
+        }
+
+        async function loadClientsFromSharePoint() {
+            const clientsList = document.getElementById('clients-list');
+            clientsList.innerHTML = '<p class="text-gray-600">Loading clients...</p>';
+
+            try {
+                const clients = JSON.parse(localStorage.getItem('clients') || '[]');
+                
+                if (clients.length === 0) {
+                    clientsList.innerHTML = '<p class="text-gray-600">No clients found. Add some clients to get started.</p>';
+                    return;
+                }
+
+                clientsList.innerHTML = clients.map(client => `
+                    <div class="border rounded-lg p-4 hover:bg-gray-50">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="font-medium text-gray-900">${client.name}</h4>
+                                <p class="text-sm text-gray-600">${client.email}</p>
+                                <p class="text-sm text-gray-600">${client.phone || 'No phone'}</p>
+                                <span class="inline-block px-2 py-1 text-xs rounded-full bg-${client.status === 'Active' ? 'green' : 'gray'}-100 text-${client.status === 'Active' ? 'green' : 'gray'}-800 mt-2">
+                                    ${client.status}
+                                </span>
+                            </div>
+                            <button onclick="editClient('${client.id}')" class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading clients:', error);
+                clientsList.innerHTML = '<p class="text-red-600">Error loading clients. Please try again.</p>';
+            }
+        }
+
+        // Appointment Management Functions
+        function showAddAppointmentForm() {
+            document.getElementById('add-appointment-form').classList.remove('hidden');
+        }
+
+        function hideAddAppointmentForm() {
+            document.getElementById('add-appointment-form').classList.add('hidden');
+            document.getElementById('appointment-form').reset();
+        }
+
+        async function loadAppointmentsFromSharePoint() {
+            const appointmentsList = document.getElementById('appointments-list');
+            appointmentsList.innerHTML = '<p class="text-gray-600">Loading appointments...</p>';
+
+            try {
+                const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+                const today = new Date().toISOString().split('T')[0];
+                const todayAppointments = appointments.filter(apt => 
+                    apt.datetime && apt.datetime.startsWith(today)
+                );
+
+                if (todayAppointments.length === 0) {
+                    appointmentsList.innerHTML = '<p class="text-gray-600">No appointments scheduled for today.</p>';
+                    return;
+                }
+
+                appointmentsList.innerHTML = todayAppointments.map(appointment => `
+                    <div class="border rounded-lg p-4 hover:bg-gray-50">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="font-medium text-gray-900">${appointment.client}</h4>
+                                <p class="text-sm text-gray-600">${new Date(appointment.datetime).toLocaleString()}</p>
+                                <p class="text-sm text-gray-600">${appointment.type}</p>
+                                <span class="inline-block px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 mt-2">
+                                    ${appointment.status}
+                                </span>
+                            </div>
+                            <button onclick="editAppointment('${appointment.id}')" class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading appointments:', error);
+                appointmentsList.innerHTML = '<p class="text-red-600">Error loading appointments. Please try again.</p>';
+            }
+        }
+
+        // Lead Management Functions
+        function showAddLeadForm() {
+            document.getElementById('add-lead-form').classList.remove('hidden');
+        }
+
+        function hideAddLeadForm() {
+            document.getElementById('add-lead-form').classList.add('hidden');
+            document.getElementById('lead-form').reset();
+        }
+
+        async function loadLeadsFromSharePoint() {
+            const leadsList = document.getElementById('leads-list');
+            leadsList.innerHTML = '<p class="text-gray-600">Loading leads...</p>';
+
+            try {
+                const leads = JSON.parse(localStorage.getItem('leads') || '[]');
+                const activeLeads = leads.filter(lead => 
+                    !['Closed Won', 'Closed Lost'].includes(lead.status)
+                );
+
+                if (activeLeads.length === 0) {
+                    leadsList.innerHTML = '<p class="text-gray-600">No active leads found.</p>';
+                    return;
+                }
+
+                leadsList.innerHTML = activeLeads.map(lead => `
+                    <div class="border rounded-lg p-4 hover:bg-gray-50">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="font-medium text-gray-900">${lead.name}</h4>
+                                <p class="text-sm text-gray-600">${lead.email || 'No email'}</p>
+                                <p class="text-sm text-gray-600">Interest: ${lead.interest}</p>
+                                <p class="text-sm text-gray-600">Source: ${lead.source}</p>
+                                <span class="inline-block px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 mt-2">
+                                    ${lead.status}
+                                </span>
+                            </div>
+                            <button onclick="editLead('${lead.id}')" class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading leads:', error);
+                leadsList.innerHTML = '<p class="text-red-600">Error loading leads. Please try again.</p>';
+            }
+        }
+
+        // Policy Management Functions
+        function showAddPolicyForm() {
+            document.getElementById('add-policy-form').classList.remove('hidden');
+        }
+
+        function hideAddPolicyForm() {
+            document.getElementById('add-policy-form').classList.add('hidden');
+            document.getElementById('policy-form').reset();
+        }
+
+        async function loadPoliciesFromSharePoint() {
+            const policiesList = document.getElementById('policies-list');
+            policiesList.innerHTML = '<p class="text-gray-600">Loading policies...</p>';
+
+            try {
+                const policies = JSON.parse(localStorage.getItem('policies') || '[]');
+                const activePolicies = policies.filter(policy => policy.status === 'Active');
+
+                if (activePolicies.length === 0) {
+                    policiesList.innerHTML = '<p class="text-gray-600">No active policies found.</p>';
+                    return;
+                }
+
+                policiesList.innerHTML = activePolicies.map(policy => `
+                    <div class="border rounded-lg p-4 hover:bg-gray-50">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="font-medium text-gray-900">${policy.number}</h4>
+                                <p class="text-sm text-gray-600">Holder: ${policy.holder}</p>
+                                <p class="text-sm text-gray-600">Type: ${policy.type}</p>
+                                <p class="text-sm text-gray-600">Premium: $${policy.premium}/month</p>
+                                <p class="text-sm text-gray-600">Carrier: ${policy.carrier}</p>
+                                <span class="inline-block px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 mt-2">
+                                    ${policy.status}
+                                </span>
+                            </div>
+                            <button onclick="editPolicy('${policy.id}')" class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading policies:', error);
+                policiesList.innerHTML = '<p class="text-red-600">Error loading policies. Please try again.</p>';
+            }
+        }
+
+        // Form submission handlers
+
+        function handleAddClient(e) {
+            e.preventDefault();
             
-            // Update stats with mock data
-            document.getElementById('total-clients').textContent = '142';
-            document.getElementById('appointments-today').textContent = '7';
-            document.getElementById('active-leads').textContent = '23';
-            document.getElementById('active-policies').textContent = '89';
+            const clientData = {
+                id: Date.now().toString(),
+                name: document.getElementById('client-name').value,
+                email: document.getElementById('client-email').value,
+                phone: document.getElementById('client-phone').value,
+                dob: document.getElementById('client-dob').value,
+                address: document.getElementById('client-address').value,
+                status: document.getElementById('client-status').value,
+                createdDate: new Date().toISOString()
+            };
+
+            // Save to localStorage (in production, this would go to SharePoint)
+            const clients = JSON.parse(localStorage.getItem('clients') || '[]');
+            clients.push(clientData);
+            localStorage.setItem('clients', JSON.stringify(clients));
+
+            // Refresh the display
+            loadClientsFromSharePoint();
+            loadDashboardData();
+            hideAddClientForm();
+            
+            showNotification('Client added successfully!', 'success');
+        }
+
+        function handleAddAppointment(e) {
+            e.preventDefault();
+            
+            const appointmentData = {
+                id: Date.now().toString(),
+                client: document.getElementById('appointment-client').value,
+                datetime: document.getElementById('appointment-datetime').value,
+                type: document.getElementById('appointment-type').value,
+                status: document.getElementById('appointment-status').value,
+                notes: document.getElementById('appointment-notes').value,
+                createdDate: new Date().toISOString()
+            };
+
+            const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+            appointments.push(appointmentData);
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+
+            loadAppointmentsFromSharePoint();
+            loadDashboardData();
+            hideAddAppointmentForm();
+            
+            showNotification('Appointment scheduled successfully!', 'success');
+        }
+
+        function handleAddLead(e) {
+            e.preventDefault();
+            
+            const leadData = {
+                id: Date.now().toString(),
+                name: document.getElementById('lead-name').value,
+                email: document.getElementById('lead-email').value,
+                phone: document.getElementById('lead-phone').value,
+                source: document.getElementById('lead-source').value,
+                interest: document.getElementById('lead-interest').value,
+                status: document.getElementById('lead-status').value,
+                notes: document.getElementById('lead-notes').value,
+                createdDate: new Date().toISOString()
+            };
+
+            const leads = JSON.parse(localStorage.getItem('leads') || '[]');
+            leads.push(leadData);
+            localStorage.setItem('leads', JSON.stringify(leads));
+
+            loadLeadsFromSharePoint();
+            loadDashboardData();
+            hideAddLeadForm();
+            
+            showNotification('Lead added successfully!', 'success');
+        }
+
+        function handleAddPolicy(e) {
+            e.preventDefault();
+            
+            const policyData = {
+                id: Date.now().toString(),
+                number: document.getElementById('policy-number').value,
+                holder: document.getElementById('policy-holder').value,
+                type: document.getElementById('policy-type').value,
+                premium: document.getElementById('policy-premium').value,
+                startDate: document.getElementById('policy-start').value,
+                endDate: document.getElementById('policy-end').value,
+                status: document.getElementById('policy-status').value,
+                carrier: document.getElementById('policy-carrier').value,
+                notes: document.getElementById('policy-notes').value,
+                createdDate: new Date().toISOString()
+            };
+
+            const policies = JSON.parse(localStorage.getItem('policies') || '[]');
+            policies.push(policyData);
+            localStorage.setItem('policies', JSON.stringify(policies));
+
+            loadPoliciesFromSharePoint();
+            loadDashboardData();
+            hideAddPolicyForm();
+            
+            showNotification('Policy added successfully!', 'success');
+        }
+
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+            
+            notification.className = `${bgColor} text-white px-4 py-2 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full`;
+            notification.textContent = message;
+            
+            container.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    container.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Load data when sections are shown
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.remove('hidden');
+            
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.nav-item').classList.add('active');
+            
+            currentSection = sectionName;
+
+            // Load data for the section
+            switch(sectionName) {
+                case 'clients':
+                    loadClientsFromSharePoint();
+                    break;
+                case 'appointments':
+                    loadAppointmentsFromSharePoint();
+                    break;
+                case 'leads':
+                    loadLeadsFromSharePoint();
+                    break;
+                case 'policies':
+                    loadPoliciesFromSharePoint();
+                    break;
+            }
         }
 
         async function testSharePointConnection() {
@@ -561,9 +1250,11 @@
         // Navigation styles
         const style = document.createElement('style');
         style.textContent = `
+            /* Navigation styles */
             .nav-item {
                 color: #6b7280;
-                transition: all 0.2s;
+                transition: all 0.3s ease;
+                cursor: pointer;
             }
             .nav-item:hover {
                 background-color: #f3f4f6;
@@ -573,14 +1264,101 @@
                 background-color: #3b82f6;
                 color: white;
             }
-            .sidebar-collapsed .nav-text {
-                display: none;
+            
+            /* Sidebar responsive styles */
+            .sidebar {
+                transition: all 0.3s ease;
             }
-            .sidebar-collapsed .nav-item {
-                justify-content: center;
+            
+            /* Mobile sidebar styles */
+            @media (max-width: 767px) {
+                .sidebar {
+                    transform: translateX(-100%);
+                }
+                .sidebar.translate-x-0 {
+                    transform: translateX(0);
+                }
+                .sidebar.-translate-x-full {
+                    transform: translateX(-100%);
+                }
             }
-            .sidebar-collapsed .nav-item svg {
-                margin-right: 0;
+            
+            /* Desktop minimized sidebar styles */
+            .sidebar-minimized {
+                width: 80px !important;
+            }
+            
+            .sidebar-minimized .nav-text {
+                display: none !important;
+            }
+            
+            .sidebar-minimized .sidebar-title {
+                display: none !important;
+            }
+            
+            .sidebar-minimized .nav-item {
+                justify-content: center !important;
+            }
+            
+            .sidebar-minimized .nav-item svg {
+                margin-right: 0 !important;
+            }
+            
+            /* Dashboard grid styles */
+            .dashboard-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 1.5rem;
+            }
+            
+            .stat-card {
+                background: white;
+                padding: 1.5rem;
+                border-radius: 0.5rem;
+                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+                transition: all 0.2s ease;
+            }
+            
+            .stat-card:hover {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                transform: translateY(-1px);
+            }
+            
+            /* Responsive adjustments */
+            @media (max-width: 640px) {
+                .dashboard-grid {
+                    grid-template-columns: 1fr;
+                }
+                
+                main {
+                    padding: 1rem !important;
+                }
+                
+                .nav-item {
+                    padding: 0.75rem !important;
+                }
+                
+                .sidebar {
+                    width: 280px !important;
+                }
+            }
+            
+            /* Form responsive styles */
+            @media (max-width: 768px) {
+                .grid.grid-cols-1.md\\:grid-cols-2 {
+                    grid-template-columns: 1fr !important;
+                }
+                
+                .md\\:col-span-2 {
+                    grid-column: span 1 !important;
+                }
+            }
+            
+            /* Animation improvements */
+            .transition-transform {
+                transition-property: transform;
+                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                transition-duration: 300ms;
             }
         `;
         document.head.appendChild(style);
