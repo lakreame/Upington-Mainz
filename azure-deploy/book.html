@@ -383,6 +383,58 @@
     </footer>
 
     <script>
+        // Email notification function using Node.js server
+        async function sendEmailNotification(appointmentData) {
+            try {
+                // Send email via our Node.js server
+                const response = await fetch('http://localhost:8080/api/submit-appointment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(appointmentData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('✅ Email sent successfully via server:', result.message);
+                return true;
+                
+            } catch (error) {
+                console.log('❌ Email notification failed:', error.message);
+                
+                // Fallback: Log the appointment details for manual processing
+                const emailBody = `
+New Appointment Request
+
+Client Name: ${appointmentData.clientName}
+Email: ${appointmentData.email}
+Phone: ${appointmentData.phone}
+Appointment Type: ${appointmentData.appointmentType}
+Insurance Type: ${appointmentData.insuranceType || 'Not specified'}
+Preferred Date: ${appointmentData.preferredDate}
+Preferred Time: ${appointmentData.preferredTime}
+Meeting Type: ${appointmentData.meetingType}
+Address: ${appointmentData.address}
+County: ${appointmentData.county}
+Appointment ID: ${appointmentData.id}
+Submitted: ${appointmentData.submittedAt}
+
+Please contact the client to confirm this appointment.
+                `.trim();
+
+                console.log('📧 EMAIL NOTIFICATION (Server Failed - Manual Process Required):');
+                console.log('To: brettanya.brown@upingtonmainz.com');
+                console.log('Subject: New Appointment Request - ' + appointmentData.clientName);
+                console.log('Body:\n' + emailBody);
+                
+                throw error;
+            }
+        }
+
         // SharePoint integration function (optional - for admin features)
         async function saveToSharePoint(submissionData) {
             try {
@@ -403,17 +455,15 @@
 
                 // Convert submission data to appointment format for SharePoint
                 const appointmentData = {
+                    Title: `${submissionData.clientName} - ${submissionData.appointmentType}`,
                     ClientName: submissionData.clientName,
-                    Email: submissionData.email,
-                    Phone: submissionData.phone,
-                    AppointmentType: submissionData.appointmentType,
-                    InsuranceType: submissionData.insuranceType,
-                    Date: submissionData.preferredDate,
-                    Time: submissionData.preferredTime,
-                    MeetingType: submissionData.meetingType,
-                    Address: submissionData.address,
-                    County: submissionData.county,
-                    Status: 'New Appointment Request'
+                    ClientEmail: submissionData.email,  // Fixed: Changed from 'Email' to 'ClientEmail'
+                    AppointmentDate: submissionData.preferredDate,  // Fixed: Changed from 'Date' to 'AppointmentDate'
+                    AppointmentTime: submissionData.preferredTime,  // Fixed: Changed from 'Time' to 'AppointmentTime'
+                    Method: submissionData.meetingType,  // Fixed: Changed from 'MeetingType' to 'Method'
+                    Types: submissionData.appointmentType,  // Fixed: Use 'Types' field for appointment type
+                    Status: 'Scheduled',  // Use standard status
+                    Notes: `Phone: ${submissionData.phone}, Address: ${submissionData.address}, County: ${submissionData.county}, Insurance Type: ${submissionData.insuranceType}`  // Include phone and other details in notes
                 };
 
                 // Save to SharePoint Appointments list
@@ -484,41 +534,38 @@
                     county: formData.get('county')
                 };
 
-                // Send to backend API
-                const response = await fetch('/api/submit-appointment', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(submissionData)
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to submit appointment');
-                }
-
-                const result = await response.json();
-                console.log('✅ Appointment submitted successfully:', result);
-
-                // Also save to SharePoint (optional - for admin integration)
-                try {
-                    await saveToSharePoint(submissionData);
-                    console.log('✅ Also saved to SharePoint');
-                } catch (sharePointError) {
-                    console.log('⚠️ SharePoint save failed (form still submitted):', sharePointError.message);
-                    // Don't fail the form submission if SharePoint fails
-                }
-
-                // Also save to localStorage as backup
+                // Generate unique ID for the appointment
+                const appointmentId = 'APT-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+                
+                // Save to localStorage as primary storage
                 const existingSubmissions = JSON.parse(localStorage.getItem('appointmentSubmissions') || '[]');
                 const fullSubmissionData = {
-                    id: result.id,
+                    id: appointmentId,
                     submittedAt: new Date().toISOString(),
                     ...submissionData,
                     status: 'New Appointment Request'
                 };
                 existingSubmissions.push(fullSubmissionData);
                 localStorage.setItem('appointmentSubmissions', JSON.stringify(existingSubmissions));
+
+                console.log('✅ Appointment saved to localStorage with ID:', appointmentId);
+
+                // Try to save to SharePoint (optional - for admin integration)
+                try {
+                    await saveToSharePoint(fullSubmissionData);
+                    console.log('✅ Also saved to SharePoint');
+                } catch (sharePointError) {
+                    console.log('⚠️ SharePoint save failed (appointment still submitted):', sharePointError.message);
+                    // Don't fail the form submission if SharePoint fails
+                }
+
+                // Send email notification (if email service is available)
+                try {
+                    await sendEmailNotification(fullSubmissionData);
+                    console.log('✅ Email notification sent');
+                } catch (emailError) {
+                    console.log('⚠️ Email notification failed (appointment still submitted):', emailError.message);
+                }
 
                 // Log for immediate admin review (visible in browser console)
                 console.log('🎯 NEW APPOINTMENT SUBMISSION:', fullSubmissionData);

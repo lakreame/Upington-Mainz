@@ -116,8 +116,47 @@
     </style>
 </head>
 <body class="bg-gray-50">
+    <!-- Login Screen -->
+    <div id="login-screen" class="fixed inset-0 bg-gradient-to-br from-blue-50 to-indigo-100 z-50 flex items-center justify-center">
+        <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+            <div class="text-center mb-8">
+                <img src="assets/images/ChatGPT Image Aug 15, 2025, 07_53_30 PM.png" alt="Upington Mainz Insurance" class="h-16 w-auto mx-auto mb-4">
+                <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+                <p class="text-gray-600 mt-2">Sign in to access your dashboard</p>
+            </div>
+            
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                    <input type="text" id="username" name="username" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Enter your username">
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" id="password" name="password" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Enter your password">
+                </div>
+                
+                <div id="login-error" class="hidden text-red-600 text-sm text-center bg-red-50 border border-red-200 rounded-md p-3">
+                    Invalid username or password
+                </div>
+                
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                    Sign In
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center">
+                <p class="text-xs text-gray-500">Secure access to Upington Mainz Insurance admin panel</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading Screen -->
-    <div id="loading-screen" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div id="loading-screen" class="fixed inset-0 bg-white z-40 flex items-center justify-center hidden">
         <div class="text-center">
             <div class="loading-spinner mx-auto mb-4"></div>
             <p class="text-gray-600">Connecting to SharePoint...</p>
@@ -125,7 +164,7 @@
     </div>
 
     <!-- Navigation Header -->
-    <nav class="bg-white shadow-sm border-b border-gray-200 fixed w-full top-0 z-40">
+    <nav id="main-nav" class="bg-white shadow-sm border-b border-gray-200 fixed w-full top-0 z-40 hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
@@ -140,6 +179,9 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <span id="welcome-user" class="text-sm text-gray-700 font-medium"></span>
+                    </div>
                     <div id="sync-status" class="flex items-center space-x-2">
                         <div class="w-2 h-2 bg-green-500 rounded-full"></div>
                         <span class="text-sm text-gray-600">Connected</span>
@@ -156,7 +198,7 @@
     </nav>
 
     <!-- Sidebar -->
-    <div id="sidebar" class="fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg sidebar-transition md:translate-x-0">
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg sidebar-transition md:translate-x-0 hidden">
         <div class="flex flex-col h-full pt-16">
             <div class="flex-1 overflow-y-auto">
                 <nav class="px-4 py-6 space-y-2">
@@ -194,7 +236,7 @@
     </div>
 
     <!-- Main Content -->
-    <div id="main-content" class="md:pl-64 main-content-transition">
+    <div id="main-content" class="md:pl-64 main-content-transition hidden">
         <main class="pt-16">
             <!-- Dashboard Section -->
             <section id="dashboard-section" class="section-content p-6">
@@ -578,54 +620,77 @@
     
     <!-- Admin Dashboard Script -->
     <script>
-        // SharePoint utility functions
-        const SharePointUtils = {
-            formatDate(dateString) {
-                if (!dateString) return 'N/A';
-                try {
-                    const date = new Date(dateString);
-                    return date.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                    });
-                } catch (error) {
-                    return 'Invalid Date';
-                }
-            },
-
-            getStatusBadgeClass(status) {
-                switch (status?.toLowerCase()) {
-                    case 'new':
-                    case 'pending':
-                        return 'bg-yellow-100 text-yellow-800';
-                    case 'active':
-                    case 'scheduled':
-                        return 'bg-green-100 text-green-800';
-                    case 'cancelled':
-                    case 'inactive':
-                        return 'bg-red-100 text-red-800';
-                    case 'converted':
-                        return 'bg-blue-100 text-blue-800';
-                    default:
-                        return 'bg-gray-100 text-gray-800';
-                }
-            },
-
-            validateEmail(email) {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return emailRegex.test(email);
-            }
-        };
-
         class AdminDashboard {
             constructor() {
                 this.sharePointManager = null;
                 this.currentSection = 'dashboard';
+                this.currentUser = null;
+                this.isLoggedIn = false;
+                
+                // Login credentials
+                this.adminCredentials = {
+                    'admin': 'admin123',
+                    'upington': 'insurance2024',
+                    'manager': 'upington2024',
+                    'staff': 'staff123'
+                };
+                
                 this.init();
             }
 
             async init() {
+                // Check if user is already logged in
+                const savedUser = localStorage.getItem('adminUser');
+                if (savedUser && this.adminCredentials[savedUser]) {
+                    this.currentUser = savedUser;
+                    this.isLoggedIn = true;
+                    await this.showDashboard();
+                } else {
+                    this.showLoginScreen();
+                }
+            }
+
+            showLoginScreen() {
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('main-nav').classList.add('hidden');
+                document.getElementById('sidebar').classList.add('hidden');
+                document.getElementById('main-content').classList.add('hidden');
+                document.getElementById('loading-screen').classList.add('hidden');
+                
+                this.initializeLoginForm();
+            }
+
+            initializeLoginForm() {
+                const loginForm = document.getElementById('login-form');
+                const loginError = document.getElementById('login-error');
+                
+                loginForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    const username = document.getElementById('username').value.trim();
+                    const password = document.getElementById('password').value;
+                    
+                    if (this.adminCredentials[username] && this.adminCredentials[username] === password) {
+                        this.currentUser = username;
+                        this.isLoggedIn = true;
+                        localStorage.setItem('adminUser', username);
+                        
+                        loginError.classList.add('hidden');
+                        this.showDashboard();
+                    } else {
+                        loginError.classList.remove('hidden');
+                        document.getElementById('password').value = '';
+                    }
+                });
+            }
+
+            async showDashboard() {
+                // Hide login screen
+                document.getElementById('login-screen').classList.add('hidden');
+                
+                // Show loading screen
+                document.getElementById('loading-screen').classList.remove('hidden');
+                
                 // Initialize SharePoint connection
                 await this.initializeSharePoint();
                 
@@ -635,8 +700,32 @@
                 // Load initial data
                 await this.loadDashboardData();
                 
+                // Show main content
+                document.getElementById('main-nav').classList.remove('hidden');
+                document.getElementById('sidebar').classList.remove('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                
+                // Update welcome message
+                const welcomeUser = document.getElementById('welcome-user');
+                if (welcomeUser) {
+                    welcomeUser.textContent = `Welcome, ${this.currentUser}`;
+                }
+                
                 // Hide loading screen
                 document.getElementById('loading-screen').classList.add('hidden');
+            }
+
+            logout() {
+                this.isLoggedIn = false;
+                this.currentUser = null;
+                localStorage.removeItem('adminUser');
+                
+                // Reset form
+                document.getElementById('login-form').reset();
+                document.getElementById('login-error').classList.add('hidden');
+                
+                // Show login screen
+                this.showLoginScreen();
             }
 
             async initializeSharePoint() {
@@ -1600,23 +1689,19 @@ County: ${submission.county}
 
                     // Update appointment status to confirmed
                     const updateData = {
-                        Status: 'Scheduled', // Keep as Scheduled, but remove pending marker
-                        Notes: 'Appointment approved by admin' // Replace notes to remove PENDING marker
+                        Status: 'Confirmed',
+                        Notes: (appointment.Notes || '').replace(/\*\*PENDING APPROVAL\*\*/gi, '') + ' - Appointment approved by admin'
                     };
 
                     await this.sharePointManager.updateAppointment(appointmentId, updateData);
                     console.log('✅ Appointment approved successfully');
                     
-                    // Create calendar event in Outlook
-                    await this.createOutlookCalendarEvent(appointment);
-                    
                     // Ask if they want to add this person as a client
                     const addAsClient = confirm(
                         `Appointment approved successfully!\\n\\n` +
-                        `📅 Calendar event created in your Outlook calendar\\n\\n` +
                         `Would you like to add ${appointment.ClientName} as a new client?\\n` +
-                        `Email: ${appointment.ClientEmail}\\n` +
-                        `Appointment Type: ${appointment.Types}`
+                        `Email: ${appointment.ClientEmail || 'No email'}\\n` +
+                        `Appointment Type: ${appointment.Types || 'Unknown'}`
                     );
 
                     if (addAsClient) {
@@ -1646,10 +1731,31 @@ County: ${submission.county}
                         return;
                     }
 
-                    // Update appointment status to rejected
+                    // Get the appointment details first
+                    const appointments = await this.sharePointManager.getAppointments();
+                    const appointment = appointments.find(apt => apt.Id === appointmentId || apt.Id === parseInt(appointmentId));
+                    
+                    if (!appointment) {
+                        this.showNotification('Error', 'Appointment not found', 'error');
+                        return;
+                    }
+
+                    // Confirm rejection
+                    const confirmReject = confirm(
+                        `Are you sure you want to reject this appointment?\\n\\n` +
+                        `Client: ${appointment.ClientName}\\n` +
+                        `Type: ${appointment.Types || 'Unknown'}\\n` +
+                        `Date: ${appointment.AppointmentDate || 'Unknown'} at ${appointment.AppointmentTime || 'Unknown'}`
+                    );
+
+                    if (!confirmReject) {
+                        return;
+                    }
+
+                    // Update appointment status to cancelled
                     const updateData = {
                         Status: 'Cancelled',
-                        Notes: 'Appointment request rejected by admin'
+                        Notes: (appointment.Notes || '').replace(/\*\*PENDING APPROVAL\*\*/gi, '') + ' - Appointment request rejected by admin'
                     };
 
                     await this.sharePointManager.updateAppointment(appointmentId, updateData);
@@ -1658,7 +1764,7 @@ County: ${submission.county}
                     // Refresh appointments list
                     await this.loadAppointments();
                     
-                    this.showNotification('Success', 'Appointment request rejected', 'success');
+                    this.showNotification('Success', 'Appointment request rejected and status set to Cancelled', 'success');
                     
                 } catch (error) {
                     console.error('Error rejecting appointment:', error);
@@ -1699,8 +1805,9 @@ County: ${submission.county}
                     }
 
                     // Parse appointment date and time
-                    const appointmentDate = new Date(appointment.PreferredDate);
-                    const [hours, minutes] = appointment.PreferredTime.split(':');
+                    const appointmentDate = new Date(appointment.AppointmentDate || appointment.PreferredDate);
+                    const timeString = appointment.AppointmentTime || appointment.PreferredTime || '10:00';
+                    const [hours, minutes] = timeString.split(':');
                     appointmentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
                     
                     // Create end time (1 hour duration)
@@ -1717,11 +1824,9 @@ County: ${submission.county}
                                     <h3>Insurance Consultation</h3>
                                     <p><strong>Client:</strong> ${appointment.ClientName}</p>
                                     <p><strong>Email:</strong> <a href="mailto:${appointment.ClientEmail}">${appointment.ClientEmail}</a></p>
-                                    <p><strong>Phone:</strong> <a href="tel:${appointment.ClientPhone}">${appointment.ClientPhone}</a></p>
                                     <p><strong>Type:</strong> ${appointment.Types}</p>
-                                    <p><strong>Meeting Type:</strong> ${appointment.MeetingType}</p>
-                                    ${appointment.Address ? `<p><strong>Address:</strong> ${appointment.Address}</p>` : ''}
-                                    ${appointment.County ? `<p><strong>County:</strong> ${appointment.County}</p>` : ''}
+                                    <p><strong>Meeting Type:</strong> ${appointment.Method || 'Not specified'}</p>
+                                    ${appointment.Notes ? `<p><strong>Notes:</strong> ${appointment.Notes}</p>` : ''}
                                     <hr>
                                     <p><em>Created automatically by Upington Mainz appointment system</em></p>
                                 </div>
@@ -1736,8 +1841,8 @@ County: ${submission.county}
                             timeZone: "America/New_York"
                         },
                         location: {
-                            displayName: appointment.MeetingType === 'In-Person' ? 
-                                (appointment.Address || 'Upington Mainz Office') : 
+                            displayName: appointment.Method === 'In-Person' ? 
+                                'Upington Mainz Office' : 
                                 'Virtual Meeting'
                         },
                         attendees: [
@@ -1804,8 +1909,9 @@ County: ${submission.county}
             generateIcsFile(appointment) {
                 try {
                     // Parse appointment date and time
-                    const appointmentDate = new Date(appointment.PreferredDate);
-                    const [hours, minutes] = appointment.PreferredTime.split(':');
+                    const appointmentDate = new Date(appointment.AppointmentDate || appointment.PreferredDate);
+                    const timeString = appointment.AppointmentTime || appointment.PreferredTime || '10:00';
+                    const [hours, minutes] = timeString.split(':');
                     appointmentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
                     
                     // Create end time (1 hour duration)
@@ -1831,8 +1937,8 @@ DTSTART:${startDateIcs}
 DTEND:${endDateIcs}
 DTSTAMP:${nowIcs}
 SUMMARY:${appointment.Types} - ${appointment.ClientName}
-DESCRIPTION:Insurance Consultation\\n\\nClient: ${appointment.ClientName}\\nEmail: ${appointment.ClientEmail}\\nPhone: ${appointment.ClientPhone}\\nType: ${appointment.Types}\\nMeeting: ${appointment.MeetingType}\\n\\nCreated by Upington Mainz appointment system
-LOCATION:${appointment.MeetingType === 'In-Person' ? (appointment.Address || 'Upington Mainz Office') : 'Virtual Meeting'}
+DESCRIPTION:Insurance Consultation\\n\\nClient: ${appointment.ClientName}\\nEmail: ${appointment.ClientEmail}\\nType: ${appointment.Types}\\nMeeting: ${appointment.Method}\\nNotes: ${appointment.Notes || 'No additional notes'}\\n\\nCreated by Upington Mainz appointment system
+LOCATION:${appointment.Method === 'In-Person' ? 'Upington Mainz Office' : 'Virtual Meeting'}
 STATUS:CONFIRMED
 SEQUENCE:0
 BEGIN:VALARM
@@ -1950,10 +2056,58 @@ END:VCALENDAR`;
                         return;
                     }
 
-                    // Create .ics calendar file content
-                    const startDate = new Date(appointment.AppointmentDate + 'T' + (appointment.AppointmentTime || '10:00'));
+                    console.log('📋 Appointment data for calendar:', appointment);
+
+                    // Validate and parse date/time
+                    let startDate;
+                    if (appointment.AppointmentDate && appointment.AppointmentTime) {
+                        // Try to parse the date and time
+                        const dateStr = appointment.AppointmentDate;
+                        const timeStr = appointment.AppointmentTime || '10:00';
+                        
+                        console.log('🕐 Parsing date:', dateStr, 'time:', timeStr);
+                        
+                        // Handle different date formats
+                        let parsedDate;
+                        if (dateStr.includes('-')) {
+                            // Format: YYYY-MM-DD or MM-DD-YYYY
+                            parsedDate = new Date(dateStr + 'T' + timeStr);
+                        } else if (dateStr.includes('/')) {
+                            // Format: MM/DD/YYYY
+                            parsedDate = new Date(dateStr + ' ' + timeStr);
+                        } else {
+                            // Try direct parsing
+                            parsedDate = new Date(dateStr + 'T' + timeStr);
+                        }
+                        
+                        // Check if date is valid
+                        if (isNaN(parsedDate.getTime())) {
+                            console.warn('Invalid date/time format:', dateStr, timeStr);
+                            // Use a default date (tomorrow at the specified time or 10 AM)
+                            const tomorrow = new Date();
+                            tomorrow.setDate(tomorrow.getDate() + 1);
+                            tomorrow.setHours(10, 0, 0, 0);
+                            startDate = tomorrow;
+                        } else {
+                            startDate = parsedDate;
+                        }
+                    } else {
+                        console.warn('Missing appointment date/time, using default');
+                        // Use default: tomorrow at 10 AM
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        tomorrow.setHours(10, 0, 0, 0);
+                        startDate = tomorrow;
+                    }
+
                     const endDate = new Date(startDate.getTime() + (60 * 60 * 1000)); // 1 hour duration
                     
+                    console.log('📅 Calendar event times:', {
+                        start: startDate.toISOString(),
+                        end: endDate.toISOString()
+                    });
+
+                    // Create .ics calendar file content
                     const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Upington Mainz//Insurance Consultation//EN
@@ -1963,8 +2117,8 @@ DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z
 DTSTART:${startDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z
 DTEND:${endDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z
 SUMMARY:${appointment.Title || 'Insurance Consultation'}
-DESCRIPTION:Client: ${appointment.ClientName}\\nEmail: ${appointment.ClientEmail}\\nType: ${appointment.Types}\\nMeeting: ${appointment.Method}\\nNotes: ${appointment.Notes}
-LOCATION:${appointment.Method === 'In-Person' ? 'Client Location' : 'Virtual Meeting'}
+DESCRIPTION:Insurance Consultation\\n\\nClient: ${appointment.ClientName}\\nEmail: ${appointment.ClientEmail}\\nType: ${appointment.Types}\\nMeeting: ${appointment.Method}\\nNotes: ${appointment.Notes || 'No additional notes'}\\n\\nCreated by Upington Mainz appointment system
+LOCATION:${appointment.Method === 'In-Person' ? 'Upington Mainz Office' : 'Virtual Meeting'}
 ORGANIZER:mailto:brettanya.brown@upingtonmainz.com
 ATTENDEE:mailto:${appointment.ClientEmail}
 STATUS:CONFIRMED
@@ -1991,11 +2145,16 @@ END:VCALENDAR`;
             }
 
             logout() {
-                if (this.sharePointManager && this.sharePointManager.msalInstance) {
-                    this.sharePointManager.msalInstance.logout();
-                } else {
-                    window.location.reload();
-                }
+                this.isLoggedIn = false;
+                this.currentUser = null;
+                localStorage.removeItem('adminUser');
+                
+                // Reset form
+                document.getElementById('login-form').reset();
+                document.getElementById('login-error').classList.add('hidden');
+                
+                // Show login screen
+                this.showLoginScreen();
             }
         }
 
