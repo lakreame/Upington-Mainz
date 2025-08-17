@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upington Mainz - Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/sharepoint-integration.js"></script>
     <style>
         .admin-container {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -281,12 +282,12 @@
 
                 <!-- SharePoint Test Section -->
                 <div id="sharepoint-test-section" class="section hidden">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6">SharePoint Connection Test</h2>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">SharePoint Integration Status</h2>
                     
-                    <div class="space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Connection Test -->
-                        <div class="bg-white rounded-lg shadow-sm p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Basic Connectivity Test</h3>
+                        <div class="bg-white p-6 rounded-lg shadow">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Connection Test</h3>
                             <div class="space-y-4">
                                 <button id="test-sharepoint-connection" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
                                     Test SharePoint Connection
@@ -297,28 +298,85 @@
                             </div>
                         </div>
 
-                        <!-- Manual SharePoint Test -->
-                        <div class="bg-white rounded-lg shadow-sm p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Manual SharePoint Access</h3>
+                        <!-- Sync Status -->
+                        <div class="bg-white p-6 rounded-lg shadow">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Data Sync Controls</h3>
                             <div class="space-y-4">
+                                <div class="flex flex-wrap gap-2">
+                                    <button id="sync-to-sharepoint" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                                        Sync to SharePoint
+                                    </button>
+                                    <button id="sync-from-sharepoint" class="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors">
+                                        Load from SharePoint
+                                    </button>
+                                </div>
+                                <div id="sync-status" class="p-4 bg-gray-50 rounded-md">
+                                    <p class="text-gray-600">Use the buttons above to sync data with SharePoint</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Integration Guide -->
+                    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+                        <h3 class="text-lg font-medium text-blue-900 mb-4">🔧 SharePoint Integration Setup</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-medium text-blue-800 mb-2">Current Configuration:</h4>
+                                <ul class="text-sm text-blue-700 space-y-1">
+                                    <li>• Site: upingtonmainzllc1.sharepoint.com</li>
+                                    <li>• Azure Function: upington-mainz-functions</li>
+                                    <li>• Client ID: ccd7cc4d-1ee9-47a5-986e-cd615e0695ad</li>
+                                    <li id="connection-mode">• Mode: Loading...</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-blue-800 mb-2">Setup Steps:</h4>
+                                <ul class="text-sm text-blue-700 space-y-1">
+                                    <li>1. Deploy Azure Function proxy</li>
+                                    <li>2. Configure environment variables</li>
+                                    <li>3. Grant admin consent for app permissions</li>
+                                    <li>4. Test connection and sync data</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-4 bg-yellow-100 border border-yellow-300 rounded">
+                            <p class="text-sm text-yellow-800">
+                                <strong>Note:</strong> If SharePoint connection fails, the dashboard will continue to work with local data storage (localStorage). 
+                                Data will be automatically synced when SharePoint connection is restored.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Manual Test (Fallback) -->
+                    <div class="mt-8 bg-white p-6 rounded-lg shadow">
+                        <details class="group">
+                            <summary class="cursor-pointer text-lg font-medium text-gray-900 mb-4 hover:text-blue-600">
+                                🔧 Advanced: Manual SharePoint Access Test
+                            </summary>
+                            <div class="mt-4 space-y-4">
+                                <p class="text-sm text-gray-600">
+                                    This section is for troubleshooting direct SharePoint access. 
+                                    Use this only if the Azure Function proxy is not working.
+                                </p>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">SharePoint Username</label>
-                                        <input type="email" id="sp-username" placeholder="your-email@domain.com" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <input type="email" id="sp-username" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="user@upingtonmainzllc1.onmicrosoft.com">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">SharePoint Password</label>
                                         <input type="password" id="sp-password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     </div>
                                 </div>
-                                <button id="test-manual-sharepoint" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
-                                    Test Manual SharePoint Access
+                                <button id="test-manual-sharepoint" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
+                                    Test Direct SharePoint Access (Will Likely Fail)
                                 </button>
                                 <div id="manual-sharepoint-status" class="p-4 bg-gray-50 rounded-md">
-                                    <p class="text-gray-600">Enter SharePoint credentials above to test manual access</p>
+                                    <p class="text-gray-600">Enter SharePoint credentials above to test direct access</p>
                                 </div>
                             </div>
-                        </div>
+                        </details>
                     </div>
                 </div>
 
@@ -562,6 +620,11 @@
             document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
             document.getElementById('test-sharepoint-connection').addEventListener('click', testSharePointConnection);
             document.getElementById('test-manual-sharepoint').addEventListener('click', testManualSharePoint);
+            document.getElementById('sync-to-sharepoint').addEventListener('click', syncToSharePoint);
+            document.getElementById('sync-from-sharepoint').addEventListener('click', syncFromSharePoint);
+
+            // Initialize SharePoint integration status
+            updateConnectionModeDisplay();
 
             // Add form submission handlers
             document.getElementById('client-form').addEventListener('submit', handleAddClient);
@@ -829,6 +892,16 @@
             clientsList.innerHTML = '<p class="text-gray-600">Loading clients...</p>';
 
             try {
+                // Try to load from SharePoint first if connected
+                if (window.sharePointConnector && SHAREPOINT_CONFIG.connectionStatus === 'connected') {
+                    const result = await window.sharePointConnector.getListItems('Clients');
+                    if (result.success) {
+                        const clients = result.items.map(item => window.dataSyncManager.transformFromSharePoint('clients', item));
+                        localStorage.setItem('clients', JSON.stringify(clients));
+                    }
+                }
+                
+                // Load from localStorage (either from SharePoint or local data)
                 const clients = JSON.parse(localStorage.getItem('clients') || '[]');
                 
                 if (clients.length === 0) {
@@ -1172,27 +1245,144 @@
             updateStatus('sharepoint-status', '🔄 Testing SharePoint connection...', 'info');
             
             try {
-                // Test basic connectivity to SharePoint site
-                const siteUrl = SHAREPOINT_CONFIG.siteUrl;
-                console.log('Testing connection to:', siteUrl);
+                const result = await window.sharePointConnector.testConnection();
                 
-                // Try to fetch the site (this will likely fail due to CORS, but we can check the error)
-                const response = await fetch(siteUrl, {
-                    method: 'HEAD',
-                    mode: 'no-cors'
-                });
+                if (result.success) {
+                    updateStatus('sharepoint-status', 
+                        '✅ SharePoint connection successful!<br>' +
+                        'Message: ' + result.message + '<br>' +
+                        'Mode: ' + (SHAREPOINT_CONFIG.useProxy ? 'Azure Function Proxy' : 'Direct Connection'), 
+                        'success'
+                    );
+                } else {
+                    updateStatus('sharepoint-status', 
+                        '❌ SharePoint connection failed<br>' +
+                        'Error: ' + result.message + '<br>' +
+                        'Suggestion: ' + (result.suggestion || 'Check configuration and try again'), 
+                        'error'
+                    );
+                }
                 
-                updateStatus('sharepoint-status', '✅ SharePoint site is reachable!<br>Site URL: ' + siteUrl, 'success');
+                updateConnectionModeDisplay();
                 
             } catch (error) {
                 console.error('SharePoint connection error:', error);
                 updateStatus('sharepoint-status', 
                     '❌ SharePoint connection failed<br>' +
                     'Error: ' + error.message + '<br>' +
-                    'Site URL: ' + SHAREPOINT_CONFIG.siteUrl + '<br>' +
-                    'This is expected due to CORS restrictions. Manual authentication may be needed.', 
+                    'This indicates a network or configuration issue.', 
                     'error'
                 );
+            }
+        }
+
+        async function syncToSharePoint() {
+            if (!window.dataSyncManager) {
+                updateStatus('sync-status', '❌ SharePoint integration not loaded', 'error');
+                return;
+            }
+            
+            updateStatus('sync-status', '🔄 Syncing data to SharePoint...', 'info');
+            
+            try {
+                const result = await window.dataSyncManager.syncToSharePoint();
+                
+                let message = '✅ Sync to SharePoint completed!<br>';
+                let hasData = false;
+                
+                for (const [entity, stats] of Object.entries(result)) {
+                    if (stats.success > 0 || stats.errors > 0) {
+                        message += `${entity}: ${stats.success} synced, ${stats.errors} errors<br>`;
+                        hasData = true;
+                    }
+                }
+                
+                if (!hasData) {
+                    message += 'No new data to sync.';
+                }
+                
+                updateStatus('sync-status', message, result.success ? 'success' : 'warning');
+                
+            } catch (error) {
+                console.error('Sync to SharePoint error:', error);
+                updateStatus('sync-status', 
+                    '❌ Failed to sync to SharePoint<br>' +
+                    'Error: ' + error.message, 
+                    'error'
+                );
+            }
+        }
+
+        async function syncFromSharePoint() {
+            if (!window.dataSyncManager) {
+                updateStatus('sync-status', '❌ SharePoint integration not loaded', 'error');
+                return;
+            }
+            
+            updateStatus('sync-status', '🔄 Loading data from SharePoint...', 'info');
+            
+            try {
+                const result = await window.dataSyncManager.syncFromSharePoint();
+                
+                let message = '✅ Data loaded from SharePoint!<br>';
+                let hasData = false;
+                
+                for (const [entity, stats] of Object.entries(result)) {
+                    if (stats.loaded > 0 || stats.errors > 0) {
+                        message += `${entity}: ${stats.loaded} loaded, ${stats.errors} errors<br>`;
+                        hasData = true;
+                    }
+                }
+                
+                if (!hasData) {
+                    message += 'No data found in SharePoint.';
+                }
+                
+                updateStatus('sync-status', message, 'success');
+                
+                // Refresh current section if it shows data
+                refreshCurrentSection();
+                
+            } catch (error) {
+                console.error('Sync from SharePoint error:', error);
+                updateStatus('sync-status', 
+                    '❌ Failed to load from SharePoint<br>' +
+                    'Error: ' + error.message, 
+                    'error'
+                );
+            }
+        }
+
+        function refreshCurrentSection() {
+            switch (currentSection) {
+                case 'clients':
+                    loadClientsFromSharePoint();
+                    break;
+                case 'appointments':
+                    loadAppointmentsFromSharePoint();
+                    break;
+                case 'leads':
+                    loadLeadsFromSharePoint();
+                    break;
+                case 'policies':
+                    loadPoliciesFromSharePoint();
+                    break;
+                case 'dashboard':
+                    updateDashboardStats();
+                    break;
+            }
+        }
+
+        function updateConnectionModeDisplay() {
+            const modeElement = document.getElementById('connection-mode');
+            if (modeElement && window.SHAREPOINT_CONFIG) {
+                const mode = SHAREPOINT_CONFIG.useProxy ? 'Azure Function Proxy' : 'Direct Connection';
+                const status = SHAREPOINT_CONFIG.connectionStatus || 'unknown';
+                modeElement.textContent = `• Mode: ${mode} (${status})`;
+                
+                // Update mode color based on status
+                modeElement.className = status === 'connected' ? 'text-green-700' : 
+                                       status === 'error' ? 'text-red-700' : 'text-blue-700';
             }
         }
 
