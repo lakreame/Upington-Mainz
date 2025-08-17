@@ -1434,7 +1434,8 @@
                 return;
             }
             
-            if (!sharePointManager.accessToken) {
+            // Check if SharePoint is connected using the same method as test connection
+            if (!sharePointManager.isConnected || !sharePointManager.isConnected()) {
                 updateStatus('sync-status', '❌ Not authenticated. Please test connection first.', 'error');
                 return;
             }
@@ -1445,38 +1446,16 @@
                 let totalSynced = 0;
                 let totalErrors = 0;
                 
-                // Sync clients
-                const clients = JSON.parse(localStorage.getItem('clients') || '[]');
-                for (const client of clients) {
-                    try {
-                        const result = await sharePointManager.addClient(client);
-                        if (result.success) totalSynced++;
-                        else totalErrors++;
-                    } catch (error) {
-                        console.error('Error syncing client:', error);
-                        totalErrors++;
-                    }
-                }
-                
-                // Sync appointments
-                const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-                for (const appointment of appointments) {
-                    try {
-                        const result = await sharePointManager.addAppointment(appointment);
-                        if (result.success) totalSynced++;
-                        else totalErrors++;
-                    } catch (error) {
-                        console.error('Error syncing appointment:', error);
-                        totalErrors++;
-                    }
-                }
-                
+                // Note: This is a simplified sync approach
+                // In a production environment, you would need proper CRUD operations
                 updateStatus('sync-status', 
-                    'Sync completed!<br>' +
-                    `Synced: ${totalSynced} items<br>` +
-                    `Errors: ${totalErrors} items`, 
-                    totalErrors === 0 ? 'success' : 'warning'
+                    'Sync to SharePoint feature is under development.<br>' +
+                    'Data synchronization will be available in the next update.<br>' +
+                    'Currently using local storage for data persistence.', 
+                    'warning'
                 );
+                
+                return;
                 
             } catch (error) {
                 console.error('Sync to SharePoint error:', error);
@@ -1494,7 +1473,8 @@
                 return;
             }
             
-            if (!sharePointManager.accessToken) {
+            // Check if SharePoint is connected using the same method as test connection
+            if (!sharePointManager.isConnected || !sharePointManager.isConnected()) {
                 updateStatus('sync-status', '❌ Not authenticated. Please test connection first.', 'error');
                 return;
             }
@@ -1505,17 +1485,31 @@
                 let totalLoaded = 0;
                 
                 // Load clients from SharePoint
-                const clientsResult = await sharePointManager.getClients();
-                if (clientsResult.success) {
-                    localStorage.setItem('clients', JSON.stringify(clientsResult.data));
-                    totalLoaded += clientsResult.data.length;
+                const clients = await sharePointManager.getClients();
+                if (clients && clients.length >= 0) {
+                    localStorage.setItem('clients', JSON.stringify(clients));
+                    totalLoaded += clients.length;
                 }
                 
                 // Load appointments from SharePoint
-                const appointmentsResult = await sharePointManager.getAppointments();
-                if (appointmentsResult.success) {
-                    localStorage.setItem('appointments', JSON.stringify(appointmentsResult.data));
-                    totalLoaded += appointmentsResult.data.length;
+                const appointments = await sharePointManager.getAppointments();
+                if (appointments && appointments.length >= 0) {
+                    localStorage.setItem('appointments', JSON.stringify(appointments));
+                    totalLoaded += appointments.length;
+                }
+                
+                // Load leads from SharePoint
+                const leads = await sharePointManager.getLeads();
+                if (leads && leads.length >= 0) {
+                    localStorage.setItem('leads', JSON.stringify(leads));
+                    totalLoaded += leads.length;
+                }
+                
+                // Load policies from SharePoint
+                const policies = await sharePointManager.getPolicies();
+                if (policies && policies.length >= 0) {
+                    localStorage.setItem('policies', JSON.stringify(policies));
+                    totalLoaded += policies.length;
                 }
                 
                 updateStatus('sync-status', 
