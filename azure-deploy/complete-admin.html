@@ -833,41 +833,52 @@
 
         async function loadDashboardFromSharePoint() {
             try {
-                // First try to get data from localStorage (fallback)
-                const clients = JSON.parse(localStorage.getItem('clients') || '[]');
-                const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-                const leads = JSON.parse(localStorage.getItem('leads') || '[]');
-                const policies = JSON.parse(localStorage.getItem('policies') || '[]');
+                if (sharePointManager) {
+                    // Use the SimpleSharePointManager to get data
+                    const clients = await sharePointManager.getClients();
+                    const appointments = await sharePointManager.getAppointments();
+                    const leads = await sharePointManager.getLeads();
+                    const policies = await sharePointManager.getPolicies();
 
-                // Count today's appointments
-                const today = new Date().toISOString().split('T')[0];
-                const todayAppointments = appointments.filter(apt => 
-                    apt.datetime && apt.datetime.startsWith(today) && apt.status !== 'Cancelled'
-                );
+                    // Count today's appointments
+                    const today = new Date().toISOString().split('T')[0];
+                    const todayAppointments = appointments.filter(apt => 
+                        apt.AppointmentDate && apt.AppointmentDate.startsWith(today) && apt.Status !== 'Cancelled'
+                    );
 
-                // Count active leads
-                const activeLeads = leads.filter(lead => 
-                    lead.status && !['Closed Won', 'Closed Lost'].includes(lead.status)
-                );
+                    // Count new leads
+                    const newLeads = leads.filter(lead => 
+                        lead.Status === 'New'
+                    );
 
-                // Count active policies
-                const activePolicies = policies.filter(policy => 
-                    policy.status === 'Active'
-                );
+                    // Count active policies
+                    const activePolicies = policies.filter(policy => 
+                        policy.Status === 'Active'
+                    );
 
-                // Update dashboard stats
-                document.getElementById('total-clients').textContent = clients.length.toString();
-                document.getElementById('appointments-today').textContent = todayAppointments.length.toString();
-                document.getElementById('active-leads').textContent = activeLeads.length.toString();
-                document.getElementById('active-policies').textContent = activePolicies.length.toString();
+                    // Update dashboard stats
+                    document.getElementById('total-clients').textContent = clients.length.toString();
+                    document.getElementById('appointments-today').textContent = todayAppointments.length.toString();
+                    document.getElementById('active-leads').textContent = newLeads.length.toString();
+                    document.getElementById('active-policies').textContent = activePolicies.length.toString();
 
-                console.log('Dashboard data loaded from localStorage');
-                
-                // In the future, this would make actual SharePoint API calls
-                // Example SharePoint REST API call structure:
-                /*
-                const response = await fetch(`${SHAREPOINT_CONFIG.siteUrl}/_api/web/lists/getbytitle('${SHAREPOINT_CONFIG.lists.clients}')/items`, {
-                    headers: {
+                    console.log('✅ Dashboard data loaded from SimpleSharePointManager:', {
+                        clients: clients.length,
+                        appointments: appointments.length,
+                        leads: leads.length,
+                        policies: policies.length
+                    });
+                } else {
+                    console.error('SharePoint manager not initialized');
+                    // Fallback to zero counts
+                    document.getElementById('total-clients').textContent = '0';
+                    document.getElementById('appointments-today').textContent = '0';
+                    document.getElementById('active-leads').textContent = '0';
+                    document.getElementById('active-policies').textContent = '0';
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                // Fallback to zero counts
                         'Accept': 'application/json;odata=verbose',
                         'Authorization': 'Bearer ' + accessToken
                     }
@@ -899,39 +910,36 @@
             clientsList.innerHTML = '<p class="text-gray-600">Loading clients...</p>';
 
             try {
-                // Try to load from SharePoint first if connected
-                if (window.sharePointConnector && SHAREPOINT_CONFIG.connectionStatus === 'connected') {
-                    const result = await window.sharePointConnector.getListItems('Clients');
-                    if (result.success) {
-                        const clients = result.items.map(item => window.dataSyncManager.transformFromSharePoint('clients', item));
-                        localStorage.setItem('clients', JSON.stringify(clients));
+                if (sharePointManager) {
+                    // Use SimpleSharePointManager to get clients
+                    const clients = await sharePointManager.getClients();
+                    
+                    if (clients.length === 0) {
+                        clientsList.innerHTML = '<p class="text-gray-600">No clients found. Add some clients to get started.</p>';
+                        return;
                     }
-                }
-                
-                // Load from localStorage (either from SharePoint or local data)
-                const clients = JSON.parse(localStorage.getItem('clients') || '[]');
-                
-                if (clients.length === 0) {
-                    clientsList.innerHTML = '<p class="text-gray-600">No clients found. Add some clients to get started.</p>';
-                    return;
-                }
 
-                clientsList.innerHTML = clients.map(client => `
-                    <div class="border rounded-lg p-4 hover:bg-gray-50">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-medium text-gray-900">${client.name}</h4>
-                                <p class="text-sm text-gray-600">${client.email}</p>
-                                <p class="text-sm text-gray-600">${client.phone || 'No phone'}</p>
-                                <span class="inline-block px-2 py-1 text-xs rounded-full bg-${client.status === 'Active' ? 'green' : 'gray'}-100 text-${client.status === 'Active' ? 'green' : 'gray'}-800 mt-2">
-                                    ${client.status}
-                                </span>
+                    clientsList.innerHTML = clients.map(client => `
+                        <div class="border rounded-lg p-4 hover:bg-gray-50">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">${client.Title}</h4>
+                                    <p class="text-sm text-gray-600">${client.Email}</p>
+                                    <p class="text-sm text-gray-600">${client.Phone || 'No phone'}</p>
+                                    <p class="text-sm text-gray-600">Type: ${client.InsuranceType || 'Not specified'}</p>
+                                    <span class="inline-block px-2 py-1 text-xs rounded-full bg-${client.Status === 'Active' ? 'green' : 'gray'}-100 text-${client.Status === 'Active' ? 'green' : 'gray'}-800 mt-2">
+                                        ${client.Status}
+                                    </span>
+                                </div>
+                                <button onclick="editClient('${client.Id}')" class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
                             </div>
-                            <button onclick="editClient('${client.id}')" class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
                         </div>
-                    </div>
-                `).join('');
+                    `).join('');
 
+                    console.log('✅ Clients loaded:', clients.length);
+                } else {
+                    clientsList.innerHTML = '<p class="text-red-600">SharePoint manager not initialized.</p>';
+                }
             } catch (error) {
                 console.error('Error loading clients:', error);
                 clientsList.innerHTML = '<p class="text-red-600">Error loading clients. Please try again.</p>';
@@ -953,32 +961,39 @@
             appointmentsList.innerHTML = '<p class="text-gray-600">Loading appointments...</p>';
 
             try {
-                const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-                const today = new Date().toISOString().split('T')[0];
-                const todayAppointments = appointments.filter(apt => 
-                    apt.datetime && apt.datetime.startsWith(today)
-                );
+                if (sharePointManager) {
+                    const appointments = await sharePointManager.getAppointments();
+                    const today = new Date().toISOString().split('T')[0];
+                    const todayAppointments = appointments.filter(apt => 
+                        apt.AppointmentDate && apt.AppointmentDate.startsWith(today)
+                    );
 
-                if (todayAppointments.length === 0) {
-                    appointmentsList.innerHTML = '<p class="text-gray-600">No appointments scheduled for today.</p>';
-                    return;
-                }
+                    if (todayAppointments.length === 0) {
+                        appointmentsList.innerHTML = '<p class="text-gray-600">No appointments scheduled for today.</p>';
+                        return;
+                    }
 
-                appointmentsList.innerHTML = todayAppointments.map(appointment => `
-                    <div class="border rounded-lg p-4 hover:bg-gray-50">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-medium text-gray-900">${appointment.client}</h4>
-                                <p class="text-sm text-gray-600">${new Date(appointment.datetime).toLocaleString()}</p>
-                                <p class="text-sm text-gray-600">${appointment.type}</p>
-                                <span class="inline-block px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 mt-2">
-                                    ${appointment.status}
-                                </span>
+                    appointmentsList.innerHTML = todayAppointments.map(appointment => `
+                        <div class="border rounded-lg p-4 hover:bg-gray-50">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">${appointment.Title}</h4>
+                                    <p class="text-sm text-gray-600">Client: ${appointment.ClientName}</p>
+                                    <p class="text-sm text-gray-600">${new Date(appointment.AppointmentDate).toLocaleString()}</p>
+                                    <p class="text-sm text-gray-600">Type: ${appointment.Type}</p>
+                                    <span class="inline-block px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 mt-2">
+                                        ${appointment.Status}
+                                    </span>
+                                </div>
+                                <button onclick="editAppointment('${appointment.Id}')" class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
                             </div>
-                            <button onclick="editAppointment('${appointment.id}')" class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
                         </div>
-                    </div>
-                `).join('');
+                    `).join('');
+
+                    console.log('✅ Appointments loaded:', appointments.length);
+                } else {
+                    appointmentsList.innerHTML = '<p class="text-red-600">SharePoint manager not initialized.</p>';
+                }
 
             } catch (error) {
                 console.error('Error loading appointments:', error);
@@ -1001,28 +1016,39 @@
             leadsList.innerHTML = '<p class="text-gray-600">Loading leads...</p>';
 
             try {
-                const leads = JSON.parse(localStorage.getItem('leads') || '[]');
-                const activeLeads = leads.filter(lead => 
-                    !['Closed Won', 'Closed Lost'].includes(lead.status)
-                );
+                if (sharePointManager) {
+                    const leads = await sharePointManager.getLeads();
+                    const activeLeads = leads.filter(lead => 
+                        !['Closed Won', 'Closed Lost'].includes(lead.Status)
+                    );
 
-                if (activeLeads.length === 0) {
-                    leadsList.innerHTML = '<p class="text-gray-600">No active leads found.</p>';
-                    return;
-                }
+                    if (activeLeads.length === 0) {
+                        leadsList.innerHTML = '<p class="text-gray-600">No active leads found.</p>';
+                        return;
+                    }
 
-                leadsList.innerHTML = activeLeads.map(lead => `
-                    <div class="border rounded-lg p-4 hover:bg-gray-50">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-medium text-gray-900">${lead.name}</h4>
-                                <p class="text-sm text-gray-600">${lead.email || 'No email'}</p>
-                                <p class="text-sm text-gray-600">Interest: ${lead.interest}</p>
-                                <p class="text-sm text-gray-600">Source: ${lead.source}</p>
-                                <span class="inline-block px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 mt-2">
-                                    ${lead.status}
-                                </span>
+                    leadsList.innerHTML = activeLeads.map(lead => `
+                        <div class="border rounded-lg p-4 hover:bg-gray-50">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">${lead.Title}</h4>
+                                    <p class="text-sm text-gray-600">${lead.Email || 'No email'}</p>
+                                    <p class="text-sm text-gray-600">Phone: ${lead.Phone || 'No phone'}</p>
+                                    <p class="text-sm text-gray-600">Interest: ${lead.Interest}</p>
+                                    <p class="text-sm text-gray-600">Source: ${lead.Source}</p>
+                                    <span class="inline-block px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 mt-2">
+                                        ${lead.Status}
+                                    </span>
+                                </div>
+                                <button onclick="editLead('${lead.Id}')" class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
                             </div>
+                        </div>
+                    `).join('');
+
+                    console.log('✅ Leads loaded:', leads.length);
+                } else {
+                    leadsList.innerHTML = '<p class="text-red-600">SharePoint manager not initialized.</p>';
+                }
                             <button onclick="editLead('${lead.id}')" class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
                         </div>
                     </div>
@@ -1049,32 +1075,36 @@
             policiesList.innerHTML = '<p class="text-gray-600">Loading policies...</p>';
 
             try {
-                const policies = JSON.parse(localStorage.getItem('policies') || '[]');
-                const activePolicies = policies.filter(policy => policy.status === 'Active');
+                if (sharePointManager) {
+                    const policies = await sharePointManager.getPolicies();
+                    const activePolicies = policies.filter(policy => policy.Status === 'Active');
 
-                if (activePolicies.length === 0) {
-                    policiesList.innerHTML = '<p class="text-gray-600">No active policies found.</p>';
-                    return;
-                }
+                    if (activePolicies.length === 0) {
+                        policiesList.innerHTML = '<p class="text-gray-600">No active policies found.</p>';
+                        return;
+                    }
 
-                policiesList.innerHTML = activePolicies.map(policy => `
-                    <div class="border rounded-lg p-4 hover:bg-gray-50">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-medium text-gray-900">${policy.number}</h4>
-                                <p class="text-sm text-gray-600">Holder: ${policy.holder}</p>
-                                <p class="text-sm text-gray-600">Type: ${policy.type}</p>
-                                <p class="text-sm text-gray-600">Premium: $${policy.premium}/month</p>
-                                <p class="text-sm text-gray-600">Carrier: ${policy.carrier}</p>
-                                <span class="inline-block px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 mt-2">
-                                    ${policy.status}
-                                </span>
+                    policiesList.innerHTML = activePolicies.map(policy => `
+                        <div class="border rounded-lg p-4 hover:bg-gray-50">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">${policy.PolicyNumber}</h4>
+                                    <p class="text-sm text-gray-600">Client: ${policy.ClientName}</p>
+                                    <p class="text-sm text-gray-600">Type: ${policy.PolicyType}</p>
+                                    <p class="text-sm text-gray-600">Premium: ${policy.Premium}</p>
+                                    <span class="inline-block px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 mt-2">
+                                        ${policy.Status}
+                                    </span>
+                                </div>
+                                <button onclick="editPolicy('${policy.Id}')" class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
                             </div>
-                            <button onclick="editPolicy('${policy.id}')" class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
                         </div>
-                    </div>
-                `).join('');
+                    `).join('');
 
+                    console.log('✅ Policies loaded:', policies.length);
+                } else {
+                    policiesList.innerHTML = '<p class="text-red-600">SharePoint manager not initialized.</p>';
+                }
             } catch (error) {
                 console.error('Error loading policies:', error);
                 policiesList.innerHTML = '<p class="text-red-600">Error loading policies. Please try again.</p>';
@@ -1268,6 +1298,16 @@
                 
                 sharePointManager = new SimpleSharePointManager(config);
                 console.log('Simple SharePoint Manager initialized successfully');
+                
+                // Authenticate the manager
+                sharePointManager.authenticate().then(success => {
+                    if (success) {
+                        console.log('✅ SharePoint authentication successful');
+                        updateConnectionModeDisplay();
+                    } else {
+                        console.log('⚠️ SharePoint authentication failed, using local mode');
+                    }
+                });
                 
                 // Update connection mode display
                 updateConnectionModeDisplay();
