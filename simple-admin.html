@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upington Mainz - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .admin-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="admin-container">
+    <!-- Login Screen -->
+    <div id="login-screen" class="flex items-center justify-center min-h-screen">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-96">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">Admin Login</h1>
+                <p class="text-gray-600">Enter your credentials to access the dashboard</p>
+            </div>
+            
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <input type="text" id="username" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+                    Login
+                </button>
+            </form>
+            
+            <div id="login-error" class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded hidden">
+                Invalid username or password
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="admin-dashboard" class="hidden">
+        <nav class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-xl font-semibold text-gray-900">Upington Mainz Admin</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span id="welcome-user" class="text-gray-700"></span>
+                        <button id="logout-btn" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- SharePoint Connection Test -->
+            <div class="bg-white overflow-hidden shadow rounded-lg mb-6">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">SharePoint Connection Test</h3>
+                    
+                    <div class="space-y-4">
+                        <button id="test-sharepoint-connection" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                            Test SharePoint Connection
+                        </button>
+                        
+                        <div id="sharepoint-status" class="p-4 bg-gray-50 rounded-md">
+                            <p class="text-gray-600">Click the button above to test SharePoint connection</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual SharePoint Test -->
+            <div class="bg-white overflow-hidden shadow rounded-lg mb-6">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Manual SharePoint Access</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">SharePoint Username</label>
+                            <input type="email" id="sp-username" placeholder="your-email@domain.com" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">SharePoint Password</label>
+                            <input type="password" id="sp-password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <button id="test-manual-sharepoint" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                            Test Manual SharePoint Access
+                        </button>
+                        
+                        <div id="manual-sharepoint-status" class="p-4 bg-gray-50 rounded-md">
+                            <p class="text-gray-600">Enter SharePoint credentials above to test manual access</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Data Entry -->
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Quick Client Entry</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Client Name</label>
+                            <input type="text" id="client-name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="client-email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                            <input type="tel" id="client-phone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Insurance Type</label>
+                            <select id="insurance-type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select Type</option>
+                                <option value="life">Life Insurance</option>
+                                <option value="health">Health Insurance</option>
+                                <option value="auto">Auto Insurance</option>
+                                <option value="home">Home Insurance</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button id="add-client" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors">
+                            Add Client
+                        </button>
+                    </div>
+                    
+                    <div id="client-status" class="mt-4 p-4 bg-gray-50 rounded-md">
+                        <p class="text-gray-600">Fill out the form above to add a new client</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/sharepoint-config.js"></script>
+    <script>
+        // Simple admin credentials (in production, this should be server-side)
+        const adminCredentials = {
+            'admin': 'Upington2024!',
+            'brettanya': 'MainzAdmin2024!',
+            'upington': 'insurance123'
+        };
+
+        let currentUser = null;
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if already logged in
+            const savedUser = localStorage.getItem('adminUser');
+            if (savedUser) {
+                currentUser = savedUser;
+                showDashboard();
+            }
+
+            // Set up event listeners
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+            document.getElementById('test-sharepoint-connection').addEventListener('click', testSharePointConnection);
+            document.getElementById('test-manual-sharepoint').addEventListener('click', testManualSharePoint);
+            document.getElementById('add-client').addEventListener('click', addClient);
+        });
+
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.toLowerCase();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('login-error');
+            
+            if (adminCredentials[username] && adminCredentials[username] === password) {
+                currentUser = username;
+                localStorage.setItem('adminUser', username);
+                errorDiv.classList.add('hidden');
+                showDashboard();
+            } else {
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem('adminUser');
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            
+            // Clear form
+            document.getElementById('login-form').reset();
+        }
+
+        function showDashboard() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.remove('hidden');
+            document.getElementById('welcome-user').textContent = `Welcome, ${currentUser}`;
+        }
+
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            
+            // Remove existing classes
+            element.classList.remove('bg-green-100', 'bg-red-100', 'bg-blue-100', 'bg-gray-50');
+            element.classList.remove('text-green-800', 'text-red-800', 'text-blue-800', 'text-gray-600');
+            
+            // Add new classes based on type
+            switch(type) {
+                case 'success':
+                    element.classList.add('bg-green-100', 'text-green-800');
+                    break;
+                case 'error':
+                    element.classList.add('bg-red-100', 'text-red-800');
+                    break;
+                case 'info':
+                    element.classList.add('bg-blue-100', 'text-blue-800');
+                    break;
+                default:
+                    element.classList.add('bg-gray-50', 'text-gray-600');
+            }
+        }
+
+        async function testSharePointConnection() {
+            updateStatus('sharepoint-status', '🔄 Testing SharePoint connection...', 'info');
+            
+            try {
+                // Test basic connectivity to SharePoint site
+                const siteUrl = SHAREPOINT_CONFIG.siteUrl;
+                console.log('Testing connection to:', siteUrl);
+                
+                // Try to fetch the site (this will likely fail due to CORS, but we can check the error)
+                const response = await fetch(siteUrl, {
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+                
+                updateStatus('sharepoint-status', '✅ SharePoint site is reachable!<br>Site URL: ' + siteUrl, 'success');
+                
+            } catch (error) {
+                console.error('SharePoint connection error:', error);
+                updateStatus('sharepoint-status', 
+                    '❌ SharePoint connection failed<br>' +
+                    'Error: ' + error.message + '<br>' +
+                    'Site URL: ' + SHAREPOINT_CONFIG.siteUrl + '<br>' +
+                    'This is expected due to CORS restrictions. Manual authentication may be needed.', 
+                    'error'
+                );
+            }
+        }
+
+        async function testManualSharePoint() {
+            const username = document.getElementById('sp-username').value;
+            const password = document.getElementById('sp-password').value;
+            
+            if (!username || !password) {
+                updateStatus('manual-sharepoint-status', '❌ Please enter both username and password', 'error');
+                return;
+            }
+            
+            updateStatus('manual-sharepoint-status', '🔄 Testing manual SharePoint access...', 'info');
+            
+            try {
+                // Create basic auth header
+                const credentials = btoa(username + ':' + password);
+                
+                // Try to access SharePoint REST API
+                const response = await fetch(SHAREPOINT_CONFIG.siteUrl + '/_api/web', {
+                    headers: {
+                        'Authorization': 'Basic ' + credentials,
+                        'Accept': 'application/json;odata=verbose'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateStatus('manual-sharepoint-status', 
+                        '✅ Manual SharePoint access successful!<br>' +
+                        'Site Title: ' + (data.d?.Title || 'Unknown') + '<br>' +
+                        'Connected as: ' + username, 
+                        'success'
+                    );
+                } else {
+                    updateStatus('manual-sharepoint-status', 
+                        '❌ Manual SharePoint access failed<br>' +
+                        'Status: ' + response.status + ' ' + response.statusText + '<br>' +
+                        'This might be due to authentication method or permissions.', 
+                        'error'
+                    );
+                }
+                
+            } catch (error) {
+                console.error('Manual SharePoint access error:', error);
+                updateStatus('manual-sharepoint-status', 
+                    '❌ Manual SharePoint access failed<br>' +
+                    'Error: ' + error.message + '<br>' +
+                    'This is likely due to CORS restrictions or authentication method.', 
+                    'error'
+                );
+            }
+        }
+
+        function addClient() {
+            const name = document.getElementById('client-name').value;
+            const email = document.getElementById('client-email').value;
+            const phone = document.getElementById('client-phone').value;
+            const insuranceType = document.getElementById('insurance-type').value;
+            
+            if (!name || !email) {
+                updateStatus('client-status', '❌ Name and email are required', 'error');
+                return;
+            }
+            
+            // For now, just show success and store locally
+            const client = {
+                name,
+                email,
+                phone,
+                insuranceType,
+                dateAdded: new Date().toISOString(),
+                addedBy: currentUser
+            };
+            
+            // Store in localStorage (in production, this would go to SharePoint)
+            let clients = JSON.parse(localStorage.getItem('clients') || '[]');
+            clients.push(client);
+            localStorage.setItem('clients', JSON.stringify(clients));
+            
+            updateStatus('client-status', 
+                '✅ Client added successfully!<br>' +
+                'Name: ' + name + '<br>' +
+                'Email: ' + email + '<br>' +
+                'Note: Currently stored locally. SharePoint integration pending.', 
+                'success'
+            );
+            
+            // Clear form
+            document.getElementById('client-name').value = '';
+            document.getElementById('client-email').value = '';
+            document.getElementById('client-phone').value = '';
+            document.getElementById('insurance-type').value = '';
+        }
+    </script>
+</body>
+</html>
