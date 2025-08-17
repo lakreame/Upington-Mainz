@@ -166,23 +166,11 @@
                         </svg>
                         <span class="nav-text">Leads</span>
                     </a>
-                    <a href="#" onclick="showSection('form-submissions')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors">
-                        <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2-2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293H8.414a1 1 0 01-.707-.293L5.293 13.293A1 1 0 004.586 13H2" />
-                        </svg>
-                        <span class="nav-text">Form Submissions</span>
-                    </a>
                     <a href="#" onclick="showSection('policies')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors">
                         <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <span class="nav-text">Policies</span>
-                    </a>
-                    <a href="#" onclick="showSection('analytics')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors">
-                        <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2-2V7a2 2 0 012-2h2a2 2 0 012 2v1m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        <span class="nav-text">Analytics</span>
                     </a>
                     <a href="#" onclick="showSection('sharepoint-test')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors">
                         <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -594,71 +582,6 @@
                         <div id="policies-list" class="space-y-3">
                             <p class="text-gray-600">Loading policies...</p>
                         </div>
-                    </div>
-                </div>
-
-                <div id="form-submissions-section" class="section hidden">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Form Submissions</h2>
-                    <p class="text-gray-600 mb-4">Website appointment requests awaiting review</p>
-                    
-                    <!-- Stats Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2-2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293H8.414a1 1 0 01-.707-.293L5.293 13.293A1 1 0 004.586 13H2" />
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-500">Total Submissions</p>
-                                    <p id="total-submissions" class="text-2xl font-semibold text-gray-900">0</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-500">Today's Submissions</p>
-                                    <p id="today-submissions" class="text-2xl font-semibold text-gray-900">0</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-500">This Week</p>
-                                    <p id="week-submissions" class="text-2xl font-semibold text-gray-900">0</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Submissions List -->
-                    <div class="bg-white rounded-lg shadow-sm p-6">
-                        <h3 class="text-lg font-medium mb-4">Recent Form Submissions</h3>
-                        <div id="submissions-list" class="space-y-3">
-                            <p class="text-gray-600 text-center py-8">No form submissions yet. Submissions from your website will appear here.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="analytics-section" class="section hidden">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Analytics</h2>
-                    <p class="text-gray-600 mb-4">Business insights and performance metrics</p>
-                    
-                    <div class="bg-white rounded-lg shadow-sm p-6">
-                        <p class="text-gray-500 text-center py-8">Analytics dashboard coming soon...</p>
                     </div>
                 </div>
 
