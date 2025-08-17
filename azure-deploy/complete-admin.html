@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upington Mainz - Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="js/sharepoint-integration.js"></script>
+    <script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+    <script src="js/sharepoint-manager-v2.js"></script>
     <style>
         .admin-container {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -625,6 +626,9 @@
 
             // Initialize SharePoint integration status
             updateConnectionModeDisplay();
+            
+            // Initialize SharePoint Manager v2
+            initializeSharePointManager();
 
             // Add form submission handlers
             document.getElementById('client-form').addEventListener('submit', handleAddClient);
@@ -704,6 +708,9 @@
             document.getElementById('loading-screen').classList.add('hidden');
             document.getElementById('admin-dashboard').classList.remove('hidden');
             document.getElementById('welcome-user').textContent = `Welcome, ${currentUser}`;
+            
+            // Initialize SharePoint Manager
+            initializeSharePointManager();
             
             // Update sync status
             updateSyncStatus('Connected', 'green');
@@ -1241,67 +1248,139 @@
             }
         }
 
+        // SharePoint Manager v2 Integration
+        let sharePointManager = null;
+        
+        function initializeSharePointManager() {
+            try {
+                const config = {
+                    siteUrl: 'https://upingtonmainzllc1.sharepoint.com/sites/UpingtonMainz',
+                    clientId: 'ccd7cc4d-1ee9-47a5-986e-cd615e0695ad',
+                    tenantId: 'common', // Use 'common' for multi-tenant or your specific tenant ID
+                    lists: {
+                        clients: 'Clients',
+                        appointments: 'Appointments', 
+                        leads: 'Leads',
+                        policies: 'Policies'
+                    },
+                    debug: true
+                };
+                
+                sharePointManager = new SharePointManager(config);
+                console.log('SharePoint Manager v2 initialized successfully');
+                
+                // Update connection mode display
+                updateConnectionModeDisplay();
+                
+            } catch (error) {
+                console.error('Failed to initialize SharePoint Manager:', error);
+                updateStatus('sharepoint-status', 
+                    '⚠️ SharePoint Manager initialization failed<br>' +
+                    'Error: ' + error.message + '<br>' +
+                    'Dashboard will continue to work with local storage.', 
+                    'warning'
+                );
+            }
+        }
+
         async function testSharePointConnection() {
             updateStatus('sharepoint-status', '🔄 Testing SharePoint connection...', 'info');
             
+            if (!sharePointManager) {
+                updateStatus('sharepoint-status', 
+                    '❌ SharePoint Manager not initialized<br>' +
+                    'Please refresh the page and try again.', 
+                    'error'
+                );
+                return;
+            }
+            
             try {
-                const result = await window.sharePointConnector.testConnection();
+                updateStatus('sharepoint-status', '🔐 Authenticating with SharePoint...', 'info');
                 
-                if (result.success) {
+                const authResult = await sharePointManager.authenticate();
+                
+                if (authResult) {
                     updateStatus('sharepoint-status', 
                         '✅ SharePoint connection successful!<br>' +
-                        'Message: ' + result.message + '<br>' +
-                        'Mode: ' + (SHAREPOINT_CONFIG.useProxy ? 'Azure Function Proxy' : 'Direct Connection'), 
+                        'Authentication: Microsoft Graph API<br>' +
+                        'Site: ' + sharePointManager.siteUrl + '<br>' +
+                        'Mode: MSAL Browser Authentication', 
                         'success'
                     );
+                    
+                    // Update connection mode display
+                    updateConnectionModeDisplay();
+                    
                 } else {
                     updateStatus('sharepoint-status', 
-                        '❌ SharePoint connection failed<br>' +
-                        'Error: ' + result.message + '<br>' +
-                        'Suggestion: ' + (result.suggestion || 'Check configuration and try again'), 
+                        '❌ SharePoint authentication failed<br>' +
+                        'Please check your credentials and try again.<br>' +
+                        'Make sure popups are allowed for this site.', 
                         'error'
                     );
                 }
-                
-                updateConnectionModeDisplay();
                 
             } catch (error) {
                 console.error('SharePoint connection error:', error);
                 updateStatus('sharepoint-status', 
                     '❌ SharePoint connection failed<br>' +
                     'Error: ' + error.message + '<br>' +
-                    'This indicates a network or configuration issue.', 
+                    'This may be due to authentication or network issues.', 
                     'error'
                 );
             }
         }
 
         async function syncToSharePoint() {
-            if (!window.dataSyncManager) {
-                updateStatus('sync-status', '❌ SharePoint integration not loaded', 'error');
+            if (!sharePointManager) {
+                updateStatus('sync-status', '❌ SharePoint Manager not initialized', 'error');
+                return;
+            }
+            
+            if (!sharePointManager.accessToken) {
+                updateStatus('sync-status', '❌ Not authenticated. Please test connection first.', 'error');
                 return;
             }
             
             updateStatus('sync-status', '🔄 Syncing data to SharePoint...', 'info');
             
             try {
-                const result = await window.dataSyncManager.syncToSharePoint();
+                let totalSynced = 0;
+                let totalErrors = 0;
                 
-                let message = '✅ Sync to SharePoint completed!<br>';
-                let hasData = false;
-                
-                for (const [entity, stats] of Object.entries(result)) {
-                    if (stats.success > 0 || stats.errors > 0) {
-                        message += `${entity}: ${stats.success} synced, ${stats.errors} errors<br>`;
-                        hasData = true;
+                // Sync clients
+                const clients = JSON.parse(localStorage.getItem('clients') || '[]');
+                for (const client of clients) {
+                    try {
+                        const result = await sharePointManager.addClient(client);
+                        if (result.success) totalSynced++;
+                        else totalErrors++;
+                    } catch (error) {
+                        console.error('Error syncing client:', error);
+                        totalErrors++;
                     }
                 }
                 
-                if (!hasData) {
-                    message += 'No new data to sync.';
+                // Sync appointments
+                const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+                for (const appointment of appointments) {
+                    try {
+                        const result = await sharePointManager.addAppointment(appointment);
+                        if (result.success) totalSynced++;
+                        else totalErrors++;
+                    } catch (error) {
+                        console.error('Error syncing appointment:', error);
+                        totalErrors++;
+                    }
                 }
                 
-                updateStatus('sync-status', message, result.success ? 'success' : 'warning');
+                updateStatus('sync-status', 
+                    `✅ Sync completed!<br>` +
+                    `Synced: ${totalSynced} items<br>` +
+                    `Errors: ${totalErrors} items`, 
+                    totalErrors === 0 ? 'success' : 'warning'
+                );
                 
             } catch (error) {
                 console.error('Sync to SharePoint error:', error);
@@ -1314,31 +1393,41 @@
         }
 
         async function syncFromSharePoint() {
-            if (!window.dataSyncManager) {
-                updateStatus('sync-status', '❌ SharePoint integration not loaded', 'error');
+            if (!sharePointManager) {
+                updateStatus('sync-status', '❌ SharePoint Manager not initialized', 'error');
+                return;
+            }
+            
+            if (!sharePointManager.accessToken) {
+                updateStatus('sync-status', '❌ Not authenticated. Please test connection first.', 'error');
                 return;
             }
             
             updateStatus('sync-status', '🔄 Loading data from SharePoint...', 'info');
             
             try {
-                const result = await window.dataSyncManager.syncFromSharePoint();
+                let totalLoaded = 0;
                 
-                let message = '✅ Data loaded from SharePoint!<br>';
-                let hasData = false;
-                
-                for (const [entity, stats] of Object.entries(result)) {
-                    if (stats.loaded > 0 || stats.errors > 0) {
-                        message += `${entity}: ${stats.loaded} loaded, ${stats.errors} errors<br>`;
-                        hasData = true;
-                    }
+                // Load clients from SharePoint
+                const clientsResult = await sharePointManager.getClients();
+                if (clientsResult.success) {
+                    localStorage.setItem('clients', JSON.stringify(clientsResult.data));
+                    totalLoaded += clientsResult.data.length;
                 }
                 
-                if (!hasData) {
-                    message += 'No data found in SharePoint.';
+                // Load appointments from SharePoint
+                const appointmentsResult = await sharePointManager.getAppointments();
+                if (appointmentsResult.success) {
+                    localStorage.setItem('appointments', JSON.stringify(appointmentsResult.data));
+                    totalLoaded += appointmentsResult.data.length;
                 }
                 
-                updateStatus('sync-status', message, 'success');
+                updateStatus('sync-status', 
+                    `✅ Data loaded from SharePoint!<br>` +
+                    `Loaded: ${totalLoaded} items<br>` +
+                    `Data is now available in the dashboard.`, 
+                    'success'
+                );
                 
                 // Refresh current section if it shows data
                 refreshCurrentSection();
@@ -1375,14 +1464,18 @@
 
         function updateConnectionModeDisplay() {
             const modeElement = document.getElementById('connection-mode');
-            if (modeElement && window.SHAREPOINT_CONFIG) {
-                const mode = SHAREPOINT_CONFIG.useProxy ? 'Azure Function Proxy' : 'Direct Connection';
-                const status = SHAREPOINT_CONFIG.connectionStatus || 'unknown';
-                modeElement.textContent = `• Mode: ${mode} (${status})`;
-                
-                // Update mode color based on status
-                modeElement.className = status === 'connected' ? 'text-green-700' : 
-                                       status === 'error' ? 'text-red-700' : 'text-blue-700';
+            if (modeElement) {
+                if (sharePointManager) {
+                    const status = sharePointManager.accessToken ? 'authenticated' : 'ready';
+                    const mode = 'Microsoft Graph API (MSAL)';
+                    modeElement.textContent = `• Mode: ${mode} (${status})`;
+                    
+                    // Update mode color based on status
+                    modeElement.className = status === 'authenticated' ? 'text-green-700' : 'text-blue-700';
+                } else {
+                    modeElement.textContent = '• Mode: Initializing...';
+                    modeElement.className = 'text-gray-700';
+                }
             }
         }
 
