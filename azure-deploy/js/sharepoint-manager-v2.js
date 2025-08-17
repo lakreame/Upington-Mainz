@@ -33,7 +33,7 @@ class SharePointManager {
                 auth: {
                     clientId: this.clientId,
                     authority: `https://login.microsoftonline.com/${this.tenantId}`,
-                    redirectUri: window.location.origin + window.location.pathname
+                    redirectUri: window.location.href
                 },
                 cache: {
                     cacheLocation: "localStorage",

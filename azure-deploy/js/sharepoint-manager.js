@@ -23,7 +23,7 @@ class SharePointManager {
                 auth: {
                     clientId: this.clientId,
                     authority: `https://login.microsoftonline.com/${this.tenantId}`,
-                    redirectUri: "http://localhost:3000/admin.html"
+                    redirectUri: window.location.href
                 },
                 cache: {
                     cacheLocation: "localStorage",
