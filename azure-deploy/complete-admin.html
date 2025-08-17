@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upington Mainz - Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
-    <script src="js/sharepoint-manager-v2.js"></script>
+    <!-- Simple SharePoint Manager - No complex authentication required -->
+    <script src="js/simple-sharepoint-manager.js"></script>
     <style>
         .admin-container {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -1266,8 +1266,8 @@
                     debug: true
                 };
                 
-                sharePointManager = new SharePointManager(config);
-                console.log('SharePoint Manager v2 initialized successfully');
+                sharePointManager = new SimpleSharePointManager(config);
+                console.log('Simple SharePoint Manager initialized successfully');
                 
                 // Update connection mode display
                 updateConnectionModeDisplay();
@@ -1296,16 +1296,17 @@
             }
             
             try {
-                updateStatus('sharepoint-status', '🔐 Authenticating with SharePoint...', 'info');
+                updateStatus('sharepoint-status', '� Testing SharePoint connection...', 'info');
                 
-                const authResult = await sharePointManager.authenticate();
+                const testResult = await sharePointManager.testConnection();
                 
-                if (authResult) {
+                if (testResult.success) {
+                    const status = sharePointManager.getConnectionStatus();
                     updateStatus('sharepoint-status', 
                         '✅ SharePoint connection successful!<br>' +
-                        'Authentication: Microsoft Graph API<br>' +
+                        'Mode: ' + testResult.mode + '<br>' +
                         'Site: ' + sharePointManager.siteUrl + '<br>' +
-                        'Mode: MSAL Browser Authentication', 
+                        'Status: ' + testResult.message, 
                         'success'
                     );
                     
@@ -1314,20 +1315,20 @@
                     
                 } else {
                     updateStatus('sharepoint-status', 
-                        '❌ SharePoint authentication failed<br>' +
-                        'Please check your credentials and try again.<br>' +
-                        'Make sure popups are allowed for this site.', 
-                        'error'
+                        '⚠️ Using local data mode<br>' +
+                        'SharePoint connection not available.<br>' +
+                        'Data will be stored locally in your browser.', 
+                        'warning'
                     );
                 }
                 
             } catch (error) {
                 console.error('SharePoint connection error:', error);
                 updateStatus('sharepoint-status', 
-                    '❌ SharePoint connection failed<br>' +
+                    '⚠️ Using local data mode<br>' +
                     'Error: ' + error.message + '<br>' +
-                    'This may be due to authentication or network issues.', 
-                    'error'
+                    'Data will be stored locally in your browser.', 
+                    'warning'
                 );
             }
         }
@@ -1466,12 +1467,12 @@
             const modeElement = document.getElementById('connection-mode');
             if (modeElement) {
                 if (sharePointManager) {
-                    const status = sharePointManager.accessToken ? 'authenticated' : 'ready';
-                    const mode = 'Microsoft Graph API (MSAL)';
-                    modeElement.textContent = `• Mode: ${mode} (${status})`;
+                    const status = sharePointManager.getConnectionStatus();
+                    const connectionStatus = sharePointManager.isConnected() ? 'connected' : 'local mode';
+                    modeElement.textContent = `• Mode: ${status.mode} (${connectionStatus})`;
                     
                     // Update mode color based on status
-                    modeElement.className = status === 'authenticated' ? 'text-green-700' : 'text-blue-700';
+                    modeElement.className = sharePointManager.isConnected() ? 'text-green-700' : 'text-blue-700';
                 } else {
                     modeElement.textContent = '• Mode: Initializing...';
                     modeElement.className = 'text-gray-700';
