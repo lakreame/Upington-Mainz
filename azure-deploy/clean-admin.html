@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Upington Mainz Insurance</title>
+    <meta name="description" content="Administrative dashboard for managing clients, appointments, and insurance policies.">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="./assets/images/ChatGPT Image Aug 15, 2025, 07_53_30 PM.png">
+    
+    <style>
+        .section { display: none; }
+        .section.active { display: block; }
+        .nav-item.active { background-color: #3b82f6; color: white; }
+        .nav-item { color: #6b7280; transition: all 0.3s ease; cursor: pointer; }
+        .nav-item:hover { background-color: #f3f4f6; color: #374151; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Login Screen -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div>
+                <img class="mx-auto h-12 w-auto" src="./assets/images/ChatGPT Image Aug 15, 2025, 07_53_30 PM.png" alt="Upington Mainz Insurance">
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Admin Dashboard</h2>
+                <p class="mt-2 text-center text-sm text-gray-600">Sign in to access the admin panel</p>
+            </div>
+            <form id="login-form" class="mt-8 space-y-6">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="username" class="sr-only">Username</label>
+                        <input id="username" name="username" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder="Username">
+                    </div>
+                    <div>
+                        <label for="password" class="sr-only">Password</label>
+                        <input id="password" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder="Password">
+                    </div>
+                </div>
+                <div>
+                    <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Sign in
+                    </button>
+                </div>
+                <div id="login-error" class="hidden text-red-600 text-sm text-center"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="admin-dashboard" class="hidden min-h-screen bg-gray-100">
+        <!-- Top Navigation -->
+        <nav class="bg-white shadow-sm border-b">
+            <div class="px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-xl font-semibold text-gray-900">Upington Mainz Admin</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span id="welcome-user" class="text-gray-700"></span>
+                        <button id="logout-btn" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors text-sm">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="flex">
+            <!-- Sidebar -->
+            <div class="w-64 bg-white shadow-lg min-h-screen">
+                <nav class="p-4 space-y-2">
+                    <a href="#" onclick="showSection('dashboard')" class="nav-item active flex items-center px-3 py-2 text-sm font-medium rounded-md">
+                        <span>📊 Dashboard</span>
+                    </a>
+                    <a href="#" onclick="showSection('clients')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md">
+                        <span>👥 Clients</span>
+                    </a>
+                    <a href="#" onclick="showSection('appointments')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md">
+                        <span>📅 Appointments</span>
+                    </a>
+                    <a href="#" onclick="showSection('leads')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md">
+                        <span>🎯 Leads</span>
+                    </a>
+                    <a href="#" onclick="showSection('form-submissions')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md">
+                        <span>📋 Form Submissions</span>
+                    </a>
+                    <a href="#" onclick="showSection('policies')" class="nav-item flex items-center px-3 py-2 text-sm font-medium rounded-md">
+                        <span>📄 Policies</span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="flex-1 p-6">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="section active">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Dashboard Overview</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <!-- Stats Cards -->
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                                    👥
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Total Clients</p>
+                                    <p class="text-2xl font-semibold text-gray-900" id="total-clients">0</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                                    📅
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Appointments Today</p>
+                                    <p class="text-2xl font-semibold text-gray-900" id="appointments-today">0</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                                    🎯
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Active Leads</p>
+                                    <p class="text-2xl font-semibold text-gray-900" id="active-leads">0</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                                    📄
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Active Policies</p>
+                                    <p class="text-2xl font-semibold text-gray-900" id="active-policies">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <button onclick="showSection('clients')" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                                Add Client
+                            </button>
+                            <button onclick="showSection('appointments')" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                                Schedule Appointment
+                            </button>
+                            <button onclick="showSection('leads')" class="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700 transition-colors">
+                                Add Lead
+                            </button>
+                            <button onclick="showSection('policies')" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors">
+                                New Policy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clients Section -->
+                <div id="clients-section" class="section">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Client Management</h2>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-medium mb-4">Client List</h3>
+                        <div id="clients-list" class="space-y-3">
+                            <p class="text-gray-600">Loading clients...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appointments Section -->
+                <div id="appointments-section" class="section">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Appointment Management</h2>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-medium mb-4">Today's Appointments</h3>
+                        <div id="appointments-list" class="space-y-3">
+                            <p class="text-gray-600">Loading appointments...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leads Section -->
+                <div id="leads-section" class="section">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Lead Management</h2>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-medium mb-4">Active Leads</h3>
+                        <div id="leads-list" class="space-y-3">
+                            <p class="text-gray-600">Loading leads...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Submissions Section -->
+                <div id="form-submissions-section" class="section">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Form Submissions</h2>
+                    <p class="text-gray-600 mb-4">Website appointment requests awaiting review</p>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-medium mb-4">Recent Form Submissions</h3>
+                        <div id="submissions-list" class="space-y-3">
+                            <p class="text-gray-600">Loading form submissions...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Policies Section -->
+                <div id="policies-section" class="section">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Policy Management</h2>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-medium mb-4">Active Policies</h3>
+                        <div id="policies-list" class="space-y-3">
+                            <p class="text-gray-600">Loading policies...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple login credentials
+        const adminCredentials = {
+            'admin': 'admin123',
+            'upington': 'insurance2024'
+        };
+
+        let currentUser = null;
+
+        // Login handling
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (adminCredentials[username] && adminCredentials[username] === password) {
+                currentUser = username;
+                localStorage.setItem('adminUser', username);
+                showDashboard();
+            } else {
+                document.getElementById('login-error').textContent = 'Invalid username or password';
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        });
+
+        // Logout handling
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('adminUser');
+            currentUser = null;
+            showLogin();
+        });
+
+        function showLogin() {
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            document.getElementById('login-form').reset();
+            document.getElementById('login-error').classList.add('hidden');
+        }
+
+        function showDashboard() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.remove('hidden');
+            document.getElementById('welcome-user').textContent = `Welcome, ${currentUser}`;
+            
+            // Load initial data
+            loadData();
+        }
+
+        // Section navigation
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.add('active');
+            
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.nav-item').classList.add('active');
+
+            // Load section-specific data
+            loadSectionData(sectionName);
+        }
+
+        // Data loading functions
+        function loadData() {
+            loadDashboardStats();
+        }
+
+        function loadSectionData(section) {
+            switch(section) {
+                case 'clients':
+                    loadClients();
+                    break;
+                case 'appointments':
+                    loadAppointments();
+                    break;
+                case 'leads':
+                    loadLeads();
+                    break;
+                case 'form-submissions':
+                    loadFormSubmissions();
+                    break;
+                case 'policies':
+                    loadPolicies();
+                    break;
+            }
+        }
+
+        function loadDashboardStats() {
+            // Get form submissions from book.html
+            const submissions = JSON.parse(localStorage.getItem('appointmentSubmissions') || '[]');
+            
+            // Update stats (using mock data for now)
+            document.getElementById('total-clients').textContent = '12';
+            document.getElementById('appointments-today').textContent = '3';
+            document.getElementById('active-leads').textContent = submissions.length;
+            document.getElementById('active-policies').textContent = '8';
+        }
+
+        function loadClients() {
+            // Mock client data
+            const clientsList = document.getElementById('clients-list');
+            clientsList.innerHTML = `
+                <div class="border rounded-lg p-4 hover:bg-gray-50">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-medium text-gray-900">John Smith</h4>
+                            <p class="text-sm text-gray-600">john.smith@email.com</p>
+                            <p class="text-sm text-gray-600">(555) 123-4567</p>
+                            <span class="inline-block px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 mt-2">Active</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="border rounded-lg p-4 hover:bg-gray-50">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-medium text-gray-900">Sarah Johnson</h4>
+                            <p class="text-sm text-gray-600">sarah.johnson@email.com</p>
+                            <p class="text-sm text-gray-600">(555) 987-6543</p>
+                            <span class="inline-block px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 mt-2">Active</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadAppointments() {
+            const appointmentsList = document.getElementById('appointments-list');
+            appointmentsList.innerHTML = `
+                <div class="border rounded-lg p-4 hover:bg-gray-50">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-medium text-gray-900">John Smith - Life Insurance Consultation</h4>
+                            <p class="text-sm text-gray-600">Today at 2:00 PM</p>
+                            <span class="inline-block px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 mt-2">Scheduled</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="border rounded-lg p-4 hover:bg-gray-50">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-medium text-gray-900">Sarah Johnson - Policy Review</h4>
+                            <p class="text-sm text-gray-600">Today at 4:30 PM</p>
+                            <span class="inline-block px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 mt-2">Confirmed</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadLeads() {
+            const leadsList = document.getElementById('leads-list');
+            leadsList.innerHTML = `
+                <div class="border rounded-lg p-4 hover:bg-gray-50">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-medium text-gray-900">Mike Wilson</h4>
+                            <p class="text-sm text-gray-600">mike.wilson@email.com</p>
+                            <p class="text-sm text-gray-600">Interested in Auto Insurance</p>
+                            <span class="inline-block px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 mt-2">New Lead</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadFormSubmissions() {
+            const submissions = JSON.parse(localStorage.getItem('appointmentSubmissions') || '[]');
+            const submissionsList = document.getElementById('submissions-list');
+            
+            if (submissions.length === 0) {
+                submissionsList.innerHTML = '<p class="text-gray-600 text-center py-8">No form submissions yet. Submissions from your website will appear here.</p>';
+                return;
+            }
+
+            submissionsList.innerHTML = submissions.map(submission => `
+                <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-medium text-gray-900">${submission.clientName}</h4>
+                            <p class="text-sm text-gray-600">${submission.email} | ${submission.phone}</p>
+                            <div class="text-sm text-gray-700 mt-2">
+                                <p><strong>Type:</strong> ${submission.appointmentType}</p>
+                                <p><strong>Meeting:</strong> ${submission.meetingType}</p>
+                                <p><strong>Preferred:</strong> ${submission.preferredDate} ${submission.preferredTime}</p>
+                                <p><strong>County:</strong> ${submission.county}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-gray-500">${new Date(submission.submittedAt).toLocaleDateString()}</p>
+                            <span class="inline-block px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">New</span>
+                            <div class="mt-2">
+                                <button onclick="convertToLead('${submission.id}')" class="bg-green-600 text-white text-xs px-2 py-1 rounded hover:bg-green-700">
+                                    Convert to Lead
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadPolicies() {
+            const policiesList = document.getElementById('policies-list');
+            policiesList.innerHTML = `
+                <div class="border rounded-lg p-4 hover:bg-gray-50">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-medium text-gray-900">Life Insurance - John Smith</h4>
+                            <p class="text-sm text-gray-600">Policy #: LI-2024-001</p>
+                            <p class="text-sm text-gray-600">Premium: $250/month</p>
+                            <span class="inline-block px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 mt-2">Active</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="border rounded-lg p-4 hover:bg-gray-50">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-medium text-gray-900">Auto Insurance - Sarah Johnson</h4>
+                            <p class="text-sm text-gray-600">Policy #: AU-2024-002</p>
+                            <p class="text-sm text-gray-600">Premium: $180/month</p>
+                            <span class="inline-block px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 mt-2">Active</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function convertToLead(submissionId) {
+            const submissions = JSON.parse(localStorage.getItem('appointmentSubmissions') || '[]');
+            const submission = submissions.find(s => s.id === submissionId);
+            
+            if (submission) {
+                alert(`Converting submission from ${submission.clientName} to lead. This would normally create a lead record in your CRM system.`);
+                
+                // Remove from submissions
+                const updatedSubmissions = submissions.filter(s => s.id !== submissionId);
+                localStorage.setItem('appointmentSubmissions', JSON.stringify(updatedSubmissions));
+                
+                // Refresh display
+                loadFormSubmissions();
+                loadDashboardStats();
+            }
+        }
+
+        // Check if already logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedUser = localStorage.getItem('adminUser');
+            if (savedUser) {
+                currentUser = savedUser;
+                showDashboard();
+            }
+        });
+    </script>
+</body>
+</html>
