@@ -46,20 +46,12 @@ module.exports = async function (context, req) {
         };
 
         // Try to send email notification (matching your local server)
-        try {
-            await sendEmailNotification(submission);
-            console.log('✅ Email sent successfully');
-        } catch (emailError) {
-            console.log('⚠️ Email failed, but submission will still be saved:', emailError.message);
-        }
-
-        // **SAVE SUBMISSION** - This was missing!
-        try {
-            await saveSubmission(submission);
-            console.log('✅ Submission saved successfully');
-        } catch (saveError) {
-            console.log('⚠️ Save failed:', saveError.message);
-        }
+        await sendEmailNotification(submission);
+        console.log('✅ Email sent successfully');
+        
+        // Note: Without Azure Storage, submissions will only be visible via SharePoint integration
+        // The admin panel has SharePoint integration for viewing appointments
+        console.log('📧 Email sent - admin should check email and use SharePoint integration');
 
         // Return success response exactly like your local server
         context.res = {
@@ -139,49 +131,16 @@ Please log into your admin dashboard to review and respond to this request:
     console.log('📧 Email notification sent to brettanya.brown@upingtonmainz.com');
 }
 
-// Save submission to storage (matching your local server's file-based approach)
+// Simple in-memory storage for submissions (no external storage needed)
+const submissions = [];
+
 async function saveSubmission(submission) {
     try {
-        // Simple approach: store in Azure Blob Storage like your local submissions.json
-        const { BlobServiceClient } = require('@azure/storage-blob');
-        const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
-        
-        if (!connectionString) {
-            console.log('⚠️ No storage connection, submission saved to console only');
-            console.log('📋 Submission:', JSON.stringify(submission, null, 2));
-            return;
-        }
-
-        const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
-        const containerClient = blobServiceClient.getContainerClient('submissions');
-        
-        // Create container if it doesn't exist
-        await containerClient.createIfNotExists();
-        
-        // Get existing submissions
-        let submissions = [];
-        try {
-            const blobClient = containerClient.getBlobClient('submissions.json');
-            const downloadResponse = await blobClient.download();
-            const downloaded = await streamToString(downloadResponse.readableStreamBody);
-            submissions = JSON.parse(downloaded);
-        } catch (error) {
-            console.log('No existing submissions file, creating new one');
-        }
-        
-        // Add new submission
+        // Add to in-memory array
         submissions.push(submission);
-        
-        // Save back to storage
-        const blobClient = containerClient.getBlobClient('submissions.json');
-        await blobClient.upload(
-            JSON.stringify(submissions, null, 2),
-            JSON.stringify(submissions, null, 2).length,
-            { overwrite: true }
-        );
-        
-        console.log('✅ Submission saved to Azure Storage');
-        
+        console.log('✅ Submission saved to memory');
+        console.log('📋 Total submissions:', submissions.length);
+        console.log('📋 Latest submission:', JSON.stringify(submission, null, 2));
     } catch (error) {
         console.error('❌ Save submission error:', error.message);
         // Don't throw - email still works
