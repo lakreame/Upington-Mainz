@@ -28,7 +28,7 @@ module.exports = async function (context, req) {
     }
 
     try {
-        // Create submission object matching your local server EXACTLY
+        // Create submission object with correct field mapping
         const submission = {
             id: Date.now().toString(),
             submittedAt: new Date().toISOString(),
@@ -37,8 +37,8 @@ module.exports = async function (context, req) {
             phone: req.body.phone,
             appointmentType: req.body.appointmentType,
             insuranceType: req.body.insuranceType,
-            preferredDate: req.body.preferredDate,  // Match local server field names
-            preferredTime: req.body.preferredTime,  // Match local server field names
+            appointmentDate: req.body.appointmentDate,  // Fixed: Use appointmentDate from form
+            appointmentTime: req.body.appointmentTime,  // Fixed: Use appointmentTime from form
             meetingType: req.body.meetingType,
             address: req.body.address,
             county: req.body.county,
@@ -106,8 +106,8 @@ Client Information:
 Appointment Details:
 • Insurance Type: ${submission.insuranceType}
 • Appointment Type: ${submission.appointmentType}
-• Preferred Date: ${submission.preferredDate}
-• Preferred Time: ${submission.preferredTime}
+• Appointment Date: ${submission.appointmentDate}
+• Appointment Time: ${submission.appointmentTime}
 • Meeting Type: ${submission.meetingType}
 
 Location:
