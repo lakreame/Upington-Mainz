@@ -37,8 +37,8 @@ module.exports = async function (context, req) {
             phone: req.body.phone,
             appointmentType: req.body.appointmentType,
             insuranceType: req.body.insuranceType,
-            preferredDate: req.body.preferredDate,
-            preferredTime: req.body.preferredTime,
+            appointmentDate: req.body.preferredDate,
+            appointmentTime: req.body.preferredTime,
             meetingType: req.body.meetingType,
             address: req.body.address,
             county: req.body.county,
@@ -133,8 +133,8 @@ async function sendEmailNotification(submission) {
                 client: submission.clientName,
                 email: submission.email,
                 phone: submission.phone,
-                date: submission.preferredDate,
-                time: submission.preferredTime
+                date: submission.appointmentDate,
+                time: submission.appointmentTime
             });
             throw new Error('Email configuration not available in Azure Functions');
         }
@@ -150,8 +150,8 @@ Client Details:
 Appointment Details:
 • Insurance Type: ${submission.insuranceType}
 • Appointment Type: ${submission.appointmentType}
-• Preferred Date: ${submission.preferredDate}
-• Preferred Time: ${submission.preferredTime}
+• Preferred Date: ${submission.appointmentDate}
+• Preferred Time: ${submission.appointmentTime}
 • Meeting Type: ${submission.meetingType}
 
 Location:

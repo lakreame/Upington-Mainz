@@ -1247,8 +1247,8 @@
                                         appointmentType: item.fields.Types,
                                         insuranceType: item.fields.Notes?.includes('Insurance Type:') ?
                                                      item.fields.Notes.split('Insurance Type:')[1]?.split('.')[0]?.trim() : 'N/A',
-                                        preferredDate: item.fields.AppointmentDate,
-                                        preferredTime: item.fields.AppointmentTime,
+                                        appointmentDate: item.fields.AppointmentDate,
+                                        appointmentTime: item.fields.AppointmentTime,
                                         meetingType: item.fields.Method,
                                         address: item.fields.Notes?.includes('Address:') ?
                                                item.fields.Notes.split('Address:')[1]?.split(',')[0]?.trim() : 'N/A',
@@ -1318,8 +1318,8 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ${submission.preferredDate}<br>
-                            <span class="text-gray-500">${submission.preferredTime}</span>
+                            ${submission.appointmentDate || submission.preferredDate}<br>
+                            <span class="text-gray-500">${submission.appointmentTime || submission.preferredTime}</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${submission.meetingType === 'In-Person' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'}">
@@ -1574,7 +1574,7 @@
                             Phone: submission.phone,
                             Source: 'Website Form',
                             InterestType: submission.appointmentType,
-                            Notes: `Meeting Type: ${submission.meetingType}\\nPreferred Date: ${submission.preferredDate} ${submission.preferredTime}\\nAddress: ${submission.address}\\nCounty: ${submission.county}`,
+                            Notes: `Meeting Type: ${submission.meetingType}\\nPreferred Date: ${submission.appointmentDate || submission.preferredDate} ${submission.appointmentTime || submission.preferredTime}\\nAddress: ${submission.address}\\nCounty: ${submission.county}`,
                             Status: 'New Lead'
                         };
 
@@ -1589,8 +1589,8 @@
                             ClientName: submission.clientName,
                             ClientEmail: submission.email,
                             // Note: ClientPhone field doesn't exist in SharePoint, so we'll put it in Notes
-                            AppointmentDate: submission.preferredDate,
-                            AppointmentTime: submission.preferredTime,
+                            AppointmentDate: submission.appointmentDate || submission.preferredDate,
+                            AppointmentTime: submission.appointmentTime || submission.preferredTime,
                             Method: submission.meetingType,
                             Types: submission.appointmentType,
                             Status: 'Scheduled',
@@ -1610,7 +1610,7 @@ Email: ${submission.email}
 Phone: ${submission.phone}
 Interest: ${submission.appointmentType}
 Meeting: ${submission.meetingType}
-Preferred: ${submission.preferredDate} ${submission.preferredTime}
+Preferred: ${submission.appointmentDate || submission.preferredDate} ${submission.appointmentTime || submission.preferredTime}
 Address: ${submission.address}
 County: ${submission.county}
                         `;
