@@ -415,8 +415,8 @@ Email: ${appointmentData.email}
 Phone: ${appointmentData.phone}
 Appointment Type: ${appointmentData.appointmentType}
 Insurance Type: ${appointmentData.insuranceType || 'Not specified'}
-Preferred Date: ${appointmentData.preferredDate}
-Preferred Time: ${appointmentData.preferredTime}
+Appointment Date: ${appointmentData.appointmentDate}
+Appointment Time: ${appointmentData.appointmentTime}
 Meeting Type: ${appointmentData.meetingType}
 Address: ${appointmentData.address}
 County: ${appointmentData.county}
@@ -458,8 +458,8 @@ Please contact the client to confirm this appointment.
                     Title: `${submissionData.clientName} - ${submissionData.appointmentType}`,
                     ClientName: submissionData.clientName,
                     ClientEmail: submissionData.email,  // Fixed: Changed from 'Email' to 'ClientEmail'
-                    AppointmentDate: submissionData.preferredDate,  // Fixed: Changed from 'Date' to 'AppointmentDate'
-                    AppointmentTime: submissionData.preferredTime,  // Fixed: Changed from 'Time' to 'AppointmentTime'
+                    AppointmentDate: submissionData.appointmentDate,  // Fixed: Use appointmentDate
+                    AppointmentTime: submissionData.appointmentTime,  // Fixed: Use appointmentTime
                     Method: submissionData.meetingType,  // Fixed: Changed from 'MeetingType' to 'Method'
                     Types: submissionData.appointmentType,  // Fixed: Use 'Types' field for appointment type
                     Status: 'Scheduled',  // Use standard status
@@ -527,8 +527,8 @@ Please contact the client to confirm this appointment.
                     phone: formData.get('phone'),
                     appointmentType: formData.get('appointmentType'),
                     insuranceType: formData.get('insuranceType'),
-                    preferredDate: formData.get('date'),
-                    preferredTime: formData.get('time'),
+                    appointmentDate: formData.get('date'),  // Fixed: Use appointmentDate
+                    appointmentTime: formData.get('time'),  // Fixed: Use appointmentTime
                     meetingType: formData.get('meetingType'),
                     address: `${formData.get('address')}, ${formData.get('city')}, ${formData.get('state')} ${formData.get('postalCode')}`,
                     county: formData.get('county')
