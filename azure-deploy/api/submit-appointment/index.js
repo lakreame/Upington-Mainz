@@ -56,7 +56,11 @@ module.exports = async function (context, req) {
         context.res = {
             ...context.res,
             status: 200,
-            body: { success: true, id: submission.id }
+            body: { 
+                success: true, 
+                message: `Appointment submission received for ${submission.clientName}`,
+                id: submission.id 
+            }
         };
         
     } catch (error) {
