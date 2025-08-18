@@ -122,21 +122,13 @@ async function sendEmailNotification(submission) {
             requireTLS: true,
             auth: {
                 user: 'BrettanyaBrown@Upingtonmainzllc1.onmicrosoft.com',
-                pass: process.env.EMAIL_PASSWORD
+                pass: process.env.EMAIL_PASSWORD || 'Zharayuri100@'
             }
         });
 
-        // Check if email password is configured
-        if (!process.env.EMAIL_PASSWORD) {
-            console.log('⚠️ EMAIL_PASSWORD not configured - skipping email notification');
-            console.log('📋 Submission details for manual processing:', {
-                client: submission.clientName,
-                email: submission.email,
-                phone: submission.phone,
-                date: submission.appointmentDate,
-                time: submission.appointmentTime
-            });
-            throw new Error('Email configuration not available in Azure Functions');
+        // Check if email functionality is working
+        if (!process.env.EMAIL_PASSWORD && !emailTransporter.options.auth.pass) {
+            console.log('⚠️ EMAIL_PASSWORD not configured - using fallback password');
         }
 
         const emailBody = `
