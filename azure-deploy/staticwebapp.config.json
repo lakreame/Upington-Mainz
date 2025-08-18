@@ -1,8 +1,7 @@
 {
   "routes": [
     {
-      "route": "/admin.html",
-      "allowedRoles": ["authenticated"]
+      "route": "/admin.html"
     },
     {
       "route": "/admin-troubleshoot.html"
