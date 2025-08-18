@@ -18,31 +18,59 @@ module.exports = async function (context, req) {
         return;
     }
 
-    if (req.method !== 'GET') {
+    if (req.method === 'GET') {
+        try {
+            const submissions = await getSubmissions();
+            
+            context.res = {
+                ...context.res,
+                status: 200,
+                body: submissions
+            };
+            
+        } catch (error) {
+            context.log.error('Get submissions error:', error);
+            context.res = {
+                ...context.res,
+                status: 500,
+                body: []
+            };
+        }
+    } else if (req.method === 'DELETE') {
+        try {
+            const submissionId = context.bindingData.id || req.params.id;
+            if (!submissionId) {
+                context.res = {
+                    ...context.res,
+                    status: 400,
+                    body: { error: 'Submission ID is required' }
+                };
+                return;
+            }
+
+            await deleteSubmission(submissionId);
+            
+            context.res = {
+                ...context.res,
+                status: 200,
+                body: { success: true }
+            };
+            
+        } catch (error) {
+            context.log.error('Delete submission error:', error);
+            context.res = {
+                ...context.res,
+                status: 500,
+                body: { error: 'Failed to delete submission' }
+            };
+        }
+    } else {
         context.res = {
             ...context.res,
             status: 405,
             body: { error: 'Method not allowed' }
         };
         return;
-    }
-
-    try {
-        const submissions = await getSubmissions();
-        
-        context.res = {
-            ...context.res,
-            status: 200,
-            body: submissions
-        };
-        
-    } catch (error) {
-        context.log.error('Get submissions error:', error);
-        context.res = {
-            ...context.res,
-            status: 500,
-            body: []
-        };
     }
 };
 
@@ -99,4 +127,27 @@ async function streamToString(readableStream) {
         });
         readableStream.on('error', reject);
     });
+}
+
+// Delete submission from Azure Blob Storage
+async function deleteSubmission(submissionId) {
+    try {
+        const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+        if (!connectionString) {
+            throw new Error('No storage connection string configured');
+        }
+
+        const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+        const containerClient = blobServiceClient.getContainerClient('submissions');
+        
+        const blobName = `submission-${submissionId}.json`;
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+        
+        await blockBlobClient.delete();
+        console.log(`✅ Deleted submission ${submissionId} from storage`);
+        
+    } catch (error) {
+        console.error('❌ Delete error:', error.message);
+        throw error;
+    }
 }
