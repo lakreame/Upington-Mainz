@@ -4,7 +4,7 @@ const path = require('path');
 const nodemailer = require('nodemailer');
 
 const app = express();
-const port = 3000;
+const port = 8080; // Changed from 3000 to 8080 to match potential Azure AD configuration
 
 // Middleware
 app.use(express.static(__dirname));

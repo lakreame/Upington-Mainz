@@ -69,7 +69,98 @@ class SharePointManager {
         }
     }
 
-    // Generic method to make SharePoint REST API calls
+    // Generic method to make Microsoft Graph API calls for SharePoint
+    async makeGraphRequest(endpoint, method = 'GET', data = null) {
+        if (!this.accessToken) {
+            throw new Error('Not authenticated. Please login first.');
+        }
+
+        const url = `https://graph.microsoft.com/v1.0${endpoint}`;
+        console.log(`Making Graph API request: ${method} ${url}`);
+        
+        const headers = {
+            'Authorization': `Bearer ${this.accessToken}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        };
+
+        const config = {
+            method: method,
+            headers: headers
+        };
+
+        if (data) {
+            config.body = JSON.stringify(data);
+        }
+
+        try {
+            const response = await fetch(url, config);
+            console.log(`Response status: ${response.status} ${response.statusText}`);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Graph API error:', errorText);
+                
+                // Try to parse JSON error for more details
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    console.error('Graph API error details:', errorJson);
+                } catch (parseError) {
+                    // Error text is not JSON, log as is
+                }
+                
+                throw new Error(`Graph API error: ${response.status}`);
+            }
+
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const result = await response.json();
+                console.log('Graph API response:', result);
+                return result;
+            } else {
+                return { success: true };
+            }
+        } catch (error) {
+            console.error('Graph API request failed:', error);
+            throw error;
+        }
+    }
+
+    // Get SharePoint site ID for Graph API calls
+    async getSiteId() {
+        if (this.siteId) return this.siteId;
+        
+        // Extract site path from URL
+        const siteUrl = new URL(this.siteUrl);
+        const sitePath = siteUrl.pathname;
+        
+        try {
+            const response = await this.makeGraphRequest(`/sites/${siteUrl.hostname}:${sitePath}`);
+            this.siteId = response.id;
+            return this.siteId;
+        } catch (error) {
+            console.error('Failed to get site ID:', error);
+            throw error;
+        }
+    }
+
+    // Get list ID for a specific list name
+    async getListId(listName) {
+        const siteId = await this.getSiteId();
+        try {
+            const response = await this.makeGraphRequest(`/sites/${siteId}/lists?$filter=displayName eq '${listName}'`);
+            if (response.value && response.value.length > 0) {
+                return response.value[0].id;
+            } else {
+                throw new Error(`List '${listName}' not found`);
+            }
+        } catch (error) {
+            console.error(`Failed to get list ID for ${listName}:`, error);
+            throw error;
+        }
+    }
+
+    // Generic method to make SharePoint REST API calls (keeping for backward compatibility)
     async makeSharePointRequest(endpoint, method = 'GET', data = null) {
         if (!this.accessToken) {
             throw new Error('Not authenticated. Please login first.');
@@ -119,7 +210,16 @@ class SharePointManager {
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('SharePoint API error:', errorText);
-                throw new Error(`SharePoint API error: ${response.status} ${response.statusText}`);
+                
+                // Try to parse JSON error for more details
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    console.error('SharePoint API error details:', errorJson);
+                } catch (parseError) {
+                    // Error text is not JSON, log as is
+                }
+                
+                throw new Error(`SharePoint API error: ${response.status}`);
             }
 
             const contentType = response.headers.get('content-type');
@@ -179,17 +279,26 @@ class SharePointManager {
 
     // Client Management Methods
     async getClients(filter = '') {
-        let endpoint = `lists/getbytitle('${this.lists.clients}')/items`;
-        if (filter) {
-            endpoint += `?$filter=${filter}`;
-        }
-        endpoint += filter ? '&' : '?';
-        endpoint += '$select=Id,Title,Email,Phone,DateOfBirth,InsuranceType,Status,Created,Modified';
-        
         try {
-            const result = await this.makeSharePointRequest(endpoint);
-            if (result && result.d && result.d.results) {
-                return result.d.results;
+            const siteId = await this.getSiteId();
+            const listId = await this.getListId(this.lists.clients);
+            
+            let endpoint = `/sites/${siteId}/lists/${listId}/items?$expand=fields`;
+            
+            const result = await this.makeGraphRequest(endpoint);
+            if (result && result.value) {
+                // Transform Graph API response to match SharePoint REST format
+                return result.value.map(item => ({
+                    Id: item.id,
+                    Title: item.fields.Title || '',
+                    Email: item.fields.Email || '',
+                    Phone: item.fields.Phone || '',
+                    DateOfBirth: item.fields.DateOfBirth || '',
+                    InsuranceType: item.fields.InsuranceType || '',
+                    Status: item.fields.Status || 'Active',
+                    Created: item.createdDateTime,
+                    Modified: item.lastModifiedDateTime
+                }));
             } else {
                 console.warn('Unexpected response format:', result);
                 return [];
@@ -201,48 +310,75 @@ class SharePointManager {
     }
 
     async createClient(clientData) {
-        const endpoint = `lists/getbytitle('${this.lists.clients}')/items`;
-        const data = {
-            __metadata: { type: `SP.Data.${this.lists.clients}ListItem` },
-            Title: clientData.name,
-            Email: clientData.email,
-            Phone: clientData.phone,
-            DateOfBirth: clientData.dateOfBirth,
-            InsuranceType: clientData.insuranceType,
-            Status: clientData.status || 'Active',
-            Address: clientData.address,
-            Notes: clientData.notes
-        };
+        try {
+            const siteId = await this.getSiteId();
+            const listId = await this.getListId(this.lists.clients);
+            
+            const endpoint = `/sites/${siteId}/lists/${listId}/items`;
+            const data = {
+                fields: {
+                    Title: clientData.name,
+                    Email: clientData.email,
+                    Phone: clientData.phone,
+                    DateOfBirth: clientData.dateOfBirth,
+                    InsuranceType: clientData.insuranceType,
+                    Status: clientData.status || 'Active',
+                    Address: clientData.address,
+                    Notes: clientData.notes
+                }
+            };
 
-        const result = await this.makeSharePointRequest(endpoint, 'POST', data);
-        return result.d;
+            console.log('Creating client with Graph API:', data);
+            const result = await this.makeGraphRequest(endpoint, 'POST', data);
+            console.log('Client created successfully:', result);
+            return result;
+        } catch (error) {
+            console.error('Error creating client:', error);
+            throw error;
+        }
     }
 
     async updateClient(clientId, clientData) {
-        const endpoint = `lists/getbytitle('${this.lists.clients}')/items(${clientId})`;
-        const data = {
-            __metadata: { type: `SP.Data.${this.lists.clients}ListItem` },
-            ...clientData
-        };
-
-        const result = await this.makeSharePointRequest(endpoint, 'MERGE', data);
-        return result;
+        try {
+            const siteId = await this.getSiteId();
+            const listId = await this.getListId(this.lists.clients);
+            
+            const endpoint = `/sites/${siteId}/lists/${listId}/items/${clientId}/fields`;
+            
+            console.log('Updating client with Graph API:', clientData);
+            const result = await this.makeGraphRequest(endpoint, 'PATCH', clientData);
+            console.log('Client updated successfully:', result);
+            return result;
+        } catch (error) {
+            console.error('Error updating client:', error);
+            throw error;
+        }
     }
 
     // Appointment Management Methods
     async getAppointments(filter = '') {
-        let endpoint = `lists/getbytitle('${this.lists.appointments}')/items`;
-        if (filter) {
-            endpoint += `?$filter=${filter}`;
-        }
-        endpoint += filter ? '&' : '?';
-        endpoint += '$select=Id,Title,ClientName,AppointmentDate,AppointmentTime,Method,Types,Status,Notes,Created';
-        endpoint += '&$orderby=AppointmentDate desc';
-        
         try {
-            const result = await this.makeSharePointRequest(endpoint);
-            if (result && result.d && result.d.results) {
-                return result.d.results;
+            const siteId = await this.getSiteId();
+            const listId = await this.getListId(this.lists.appointments);
+            
+            let endpoint = `/sites/${siteId}/lists/${listId}/items?$expand=fields`;
+            
+            const result = await this.makeGraphRequest(endpoint);
+            if (result && result.value) {
+                // Transform Graph API response to match SharePoint REST format
+                return result.value.map(item => ({
+                    Id: item.id,
+                    Title: item.fields.Title || '',
+                    ClientName: item.fields.ClientName || '',
+                    ClientEmail: item.fields.ClientEmail || '',  // Added ClientEmail field
+                    AppointmentDate: item.fields.AppointmentDate || '',
+                    AppointmentTime: item.fields.AppointmentTime || '',
+                    Method: item.fields.Method || '',
+                    Types: item.fields.Types || '',
+                    Status: item.fields.Status || 'Scheduled',
+                    Notes: item.fields.Notes || '',
+                    Created: item.createdDateTime
+                })).sort((a, b) => new Date(b.AppointmentDate) - new Date(a.AppointmentDate));
             } else {
                 console.warn('Unexpected response format:', result);
                 return [];
@@ -254,38 +390,74 @@ class SharePointManager {
     }
 
     async createAppointment(appointmentData) {
-        const endpoint = `lists/getbytitle('${this.lists.appointments}')/items`;
-        const data = {
-            __metadata: { type: `SP.Data.${this.lists.appointments}ListItem` },
-            Title: `${appointmentData.clientName} - ${appointmentData.types}`,
-            ClientName: appointmentData.clientName,
-            ClientEmail: appointmentData.clientEmail,
-            AppointmentDate: appointmentData.date,
-            AppointmentTime: appointmentData.time,
-            Method: appointmentData.method,
-            Types: appointmentData.types,
-            Status: appointmentData.status || 'Scheduled',
-            Notes: appointmentData.notes
-        };
+        try {
+            const siteId = await this.getSiteId();
+            const listId = await this.getListId(this.lists.appointments);
+            
+            const endpoint = `/sites/${siteId}/lists/${listId}/items`;
+            const data = {
+                fields: {
+                    Title: `${appointmentData.ClientName || appointmentData.clientName} - ${appointmentData.Types || appointmentData.types || appointmentData.AppointmentType}`,
+                    ClientName: appointmentData.ClientName || appointmentData.clientName,
+                    ClientEmail: appointmentData.ClientEmail || appointmentData.email,  // Fixed: Use ClientEmail instead of Email
+                    AppointmentDate: appointmentData.Date || appointmentData.date || appointmentData.preferredDate,
+                    AppointmentTime: appointmentData.Time || appointmentData.time || appointmentData.preferredTime,
+                    Method: appointmentData.MeetingType || appointmentData.meetingType || appointmentData.method,
+                    Types: appointmentData.AppointmentType || appointmentData.types,
+                    Status: appointmentData.Status || appointmentData.status || 'New Appointment Request',
+                    Notes: appointmentData.Notes || appointmentData.notes
+                }
+            };
 
-        const result = await this.makeSharePointRequest(endpoint, 'POST', data);
-        return result.d;
+            console.log('Creating appointment with Graph API:', data);
+            const result = await this.makeGraphRequest(endpoint, 'POST', data);
+            console.log('Appointment created successfully:', result);
+            return result;
+        } catch (error) {
+            console.error('Error creating appointment:', error);
+            throw error;
+        }
+    }
+
+    async updateAppointment(appointmentId, updateData) {
+        try {
+            const siteId = await this.getSiteId();
+            const listId = await this.getListId(this.lists.appointments);
+            
+            const endpoint = `/sites/${siteId}/lists/${listId}/items/${appointmentId}/fields`;
+            
+            console.log('Updating appointment with Graph API:', updateData);
+            const result = await this.makeGraphRequest(endpoint, 'PATCH', updateData);
+            console.log('Appointment updated successfully:', result);
+            return result;
+        } catch (error) {
+            console.error('Error updating appointment:', error);
+            throw error;
+        }
     }
 
     // Lead Management Methods
     async getLeads(filter = '') {
-        let endpoint = `lists/getbytitle('${this.lists.leads}')/items`;
-        if (filter) {
-            endpoint += `?$filter=${filter}`;
-        }
-        endpoint += filter ? '&' : '?';
-        endpoint += '$select=Id,Title,Email,Phone,Source,Status,InterestType,Created,Notes';
-        endpoint += '&$orderby=Created desc';
-        
         try {
-            const result = await this.makeSharePointRequest(endpoint);
-            if (result && result.d && result.d.results) {
-                return result.d.results;
+            const siteId = await this.getSiteId();
+            const listId = await this.getListId(this.lists.leads);
+            
+            let endpoint = `/sites/${siteId}/lists/${listId}/items?$expand=fields`;
+            
+            const result = await this.makeGraphRequest(endpoint);
+            if (result && result.value) {
+                // Transform Graph API response to match SharePoint REST format
+                return result.value.map(item => ({
+                    Id: item.id,
+                    Title: item.fields.Title || '',
+                    Email: item.fields.Email || '',
+                    Phone: item.fields.Phone || '',
+                    Source: item.fields.Source || '',
+                    Status: item.fields.Status || 'New',
+                    InterestType: item.fields.InterestType || '',
+                    Notes: item.fields.Notes || '',
+                    Created: item.createdDateTime
+                })).sort((a, b) => new Date(b.Created) - new Date(a.Created));
             } else {
                 console.warn('Unexpected response format:', result);
                 return [];
@@ -297,60 +469,102 @@ class SharePointManager {
     }
 
     async createLead(leadData) {
-        const endpoint = `lists/getbytitle('${this.lists.leads}')/items`;
-        const data = {
-            __metadata: { type: `SP.Data.${this.lists.leads}ListItem` },
-            Title: leadData.name,
-            Email: leadData.email,
-            Phone: leadData.phone,
-            Source: leadData.source,
-            Status: leadData.status || 'New',
-            InterestType: leadData.interestType,
-            Notes: leadData.notes
-        };
+        try {
+            const siteId = await this.getSiteId();
+            const listId = await this.getListId(this.lists.leads);
+            
+            const endpoint = `/sites/${siteId}/lists/${listId}/items`;
+            const data = {
+                fields: {
+                    Title: leadData.name,
+                    Email: leadData.email,
+                    Phone: leadData.phone,
+                    Source: leadData.source,
+                    Status: leadData.status || 'New',
+                    InterestType: leadData.interestType,
+                    Notes: leadData.notes
+                }
+            };
 
-        const result = await this.makeSharePointRequest(endpoint, 'POST', data);
-        return result.d;
+            console.log('Creating lead with Graph API:', data);
+            const result = await this.makeGraphRequest(endpoint, 'POST', data);
+            console.log('Lead created successfully:', result);
+            return result;
+        } catch (error) {
+            console.error('Error creating lead:', error);
+            throw error;
+        }
     }
 
     // Policy Management Methods
     async getPolicies(clientId = null) {
-        let endpoint = `lists/getbytitle('${this.lists.policies}')/items`;
-        let filter = '';
-        
-        if (clientId) {
-            filter = `ClientId eq ${clientId}`;
+        try {
+            const siteId = await this.getSiteId();
+            const listId = await this.getListId(this.lists.policies);
+            
+            let endpoint = `/sites/${siteId}/lists/${listId}/items?$expand=fields`;
+            
+            const result = await this.makeGraphRequest(endpoint);
+            if (result && result.value) {
+                // Transform Graph API response to match SharePoint REST format
+                let policies = result.value.map(item => ({
+                    Id: item.id,
+                    Title: item.fields.Title || '',
+                    ClientName: item.fields.ClientName || '',
+                    PolicyNumber: item.fields.PolicyNumber || '',
+                    InsuranceType: item.fields.InsuranceType || '',
+                    Provider: item.fields.Provider || '',
+                    Premium: item.fields.Premium || '',
+                    Status: item.fields.Status || 'Active',
+                    EffectiveDate: item.fields.EffectiveDate || '',
+                    ExpirationDate: item.fields.ExpirationDate || ''
+                }));
+                
+                // Filter by clientId if provided
+                if (clientId) {
+                    policies = policies.filter(policy => policy.ClientId === clientId);
+                }
+                
+                return policies;
+            } else {
+                console.warn('Unexpected response format:', result);
+                return [];
+            }
+        } catch (error) {
+            console.error('Error getting policies:', error);
+            throw error;
         }
-        
-        if (filter) {
-            endpoint += `?$filter=${filter}&`;
-        } else {
-            endpoint += '?';
-        }
-        endpoint += '$select=Id,Title,ClientName,PolicyNumber,InsuranceType,Provider,Premium,Status,EffectiveDate,ExpirationDate';
-        
-        const result = await this.makeSharePointRequest(endpoint);
-        return result.d.results;
     }
 
     async createPolicy(policyData) {
-        const endpoint = `lists/getbytitle('${this.lists.policies}')/items`;
-        const data = {
-            __metadata: { type: `SP.Data.${this.lists.policies}ListItem` },
-            Title: `${policyData.clientName} - ${policyData.insuranceType}`,
-            ClientName: policyData.clientName,
-            ClientId: policyData.clientId,
-            PolicyNumber: policyData.policyNumber,
-            InsuranceType: policyData.insuranceType,
-            Provider: policyData.provider,
-            Premium: policyData.premium,
-            Status: policyData.status || 'Active',
-            EffectiveDate: policyData.effectiveDate,
-            ExpirationDate: policyData.expirationDate
-        };
+        try {
+            const siteId = await this.getSiteId();
+            const listId = await this.getListId(this.lists.policies);
+            
+            const endpoint = `/sites/${siteId}/lists/${listId}/items`;
+            const data = {
+                fields: {
+                    Title: `${policyData.clientName} - ${policyData.insuranceType}`,
+                    ClientName: policyData.clientName,
+                    ClientId: policyData.clientId,
+                    PolicyNumber: policyData.policyNumber,
+                    InsuranceType: policyData.insuranceType,
+                    Provider: policyData.provider,
+                    Premium: policyData.premium,
+                    Status: policyData.status || 'Active',
+                    EffectiveDate: policyData.effectiveDate,
+                    ExpirationDate: policyData.expirationDate
+                }
+            };
 
-        const result = await this.makeSharePointRequest(endpoint, 'POST', data);
-        return result.d;
+            console.log('Creating policy with Graph API:', data);
+            const result = await this.makeGraphRequest(endpoint, 'POST', data);
+            console.log('Policy created successfully:', result);
+            return result;
+        } catch (error) {
+            console.error('Error creating policy:', error);
+            throw error;
+        }
     }
 
     // Analytics and Reporting

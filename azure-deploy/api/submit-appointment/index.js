@@ -46,12 +46,22 @@ module.exports = async function (context, req) {
         };
 
         // Try to send email notification (matching your local server)
-        await sendEmailNotification(submission);
-        console.log('✅ Email sent successfully');
+        try {
+            await sendEmailNotification(submission);
+            console.log('✅ Email sent successfully');
+        } catch (emailError) {
+            console.log('⚠️ Email failed, trying SMS backup:', emailError.message);
+            try {
+                await sendSMSNotification(submission);
+                console.log('✅ SMS backup sent successfully');
+            } catch (smsError) {
+                console.log('❌ Both email and SMS failed:', smsError.message);
+            }
+        }
         
         // Note: Without Azure Storage, submissions will only be visible via SharePoint integration
         // The admin panel has SharePoint integration for viewing appointments
-        console.log('📧 Email sent - admin should check email and use SharePoint integration');
+        console.log('📧 Notification sent - admin should check email/SMS and use SharePoint integration');
 
         // Return success response exactly like your local server
         context.res = {
@@ -129,6 +139,26 @@ Please log into your admin dashboard to review and respond to this request:
 
     await emailTransporter.sendMail(mailOptions);
     console.log('📧 Email notification sent to brettanya.brown@upingtonmainz.com');
+}
+
+// SMS notification function using email-to-SMS gateway
+async function sendSMSNotification(submission) {
+    const smsText = `NEW APPOINTMENT REQUEST from ${submission.clientName}. 
+Phone: ${submission.phone}
+Date: ${submission.appointmentDate} at ${submission.appointmentTime}
+Service: ${submission.serviceType}
+Insurance: ${submission.insuranceType}
+Message: ${submission.message}`;
+
+    const smsOptions = {
+        from: 'appointments@upingtonmainz.com',
+        to: '4707987862@vtext.com', // Verizon SMS gateway
+        subject: 'New Appointment',
+        text: smsText
+    };
+
+    await emailTransporter.sendMail(smsOptions);
+    console.log('📱 SMS notification sent to 4707987862');
 }
 
 // Simple in-memory storage for submissions (no external storage needed)
