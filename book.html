@@ -564,14 +564,9 @@ Please contact the client to confirm this appointment.
 
                 console.log('✅ Appointment saved to localStorage with ID:', appointmentId);
 
-                // Try to save to SharePoint (optional - for admin integration)
-                try {
-                    await saveToSharePoint(fullSubmissionData);
-                    console.log('✅ Also saved to SharePoint');
-                } catch (sharePointError) {
-                    console.log('⚠️ SharePoint save failed (appointment still submitted):', sharePointError.message);
-                    // Don't fail the form submission if SharePoint fails
-                }
+                // SharePoint integration is disabled for public forms
+                // SharePoint is only used in the admin panel for viewing appointments
+                console.log('ℹ️ SharePoint integration skipped for public form');
 
                 // Send email notification (if email service is available)
                 try {
