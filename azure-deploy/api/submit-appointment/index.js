@@ -50,13 +50,15 @@ module.exports = async function (context, req) {
             await sendEmailNotification(submission);
             console.log('✅ Email sent successfully');
         } catch (emailError) {
-            console.log('⚠️ Email failed, trying SMS backup:', emailError.message);
-            try {
-                await sendSMSNotification(submission);
-                console.log('✅ SMS backup sent successfully');
-            } catch (smsError) {
-                console.log('❌ Both email and SMS failed:', smsError.message);
-            }
+            console.log('⚠️ Email failed:', emailError.message);
+        }
+        
+        // Always send SMS notification regardless of email status
+        try {
+            await sendSMSNotification(submission);
+            console.log('✅ SMS sent successfully');
+        } catch (smsError) {
+            console.log('❌ SMS failed:', smsError.message);
         }
         
         // Note: Without Azure Storage, submissions will only be visible via SharePoint integration
@@ -143,15 +145,28 @@ Please log into your admin dashboard to review and respond to this request:
 
 // SMS notification function using email-to-SMS gateway
 async function sendSMSNotification(submission) {
+    // Create email transporter for SMS
+    const emailTransporter = nodemailer.createTransporter({
+        host: 'smtp.office365.com',
+        port: 587,
+        secure: false,
+        requireTLS: true,
+        auth: {
+            user: 'BrettanyaBrown@Upingtonmainzllc1.onmicrosoft.com',
+            pass: 'Zharayuri100@'
+        }
+    });
+
     const smsText = `NEW APPOINTMENT REQUEST from ${submission.clientName}. 
 Phone: ${submission.phone}
 Date: ${submission.appointmentDate} at ${submission.appointmentTime}
-Service: ${submission.serviceType}
+Type: ${submission.appointmentType}
 Insurance: ${submission.insuranceType}
-Message: ${submission.message}`;
+Meeting: ${submission.meetingType}
+Address: ${submission.address}`;
 
     const smsOptions = {
-        from: 'appointments@upingtonmainz.com',
+        from: 'BrettanyaBrown@Upingtonmainzllc1.onmicrosoft.com',
         to: '4707987862@vtext.com', // Verizon SMS gateway
         subject: 'New Appointment',
         text: smsText
