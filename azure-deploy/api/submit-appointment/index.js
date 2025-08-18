@@ -34,11 +34,26 @@ module.exports = async function (context, req) {
   };
 
   try {
-    const emailInfo = await sendEmailNotification(submission, context);
-    context.log('Email send result:', emailInfo);
+    let emailInfo = null;
+    let smsInfo = null;
+    
+    // Try email notification
+    try {
+      emailInfo = await sendEmailNotification(submission, context);
+      context.log('Email send result:', emailInfo);
+    } catch (emailError) {
+      context.log.error('Email failed:', emailError.message);
+      emailInfo = { error: emailError.message };
+    }
 
-    const smsInfo = await sendSMSNotification(submission, context);
-    context.log('SMS send result:', smsInfo);
+    // Try SMS notification
+    try {
+      smsInfo = await sendSMSNotification(submission, context);
+      context.log('SMS send result:', smsInfo);
+    } catch (smsError) {
+      context.log.error('SMS failed:', smsError.message);
+      smsInfo = { error: smsError.message };
+    }
 
     context.res = {
       ...context.res,
@@ -48,15 +63,23 @@ module.exports = async function (context, req) {
         message: `Notifications sent for ${submission.clientName}`,
         id: submission.id,
         emailMessageId: emailInfo?.messageId || null,
-        smsMessageId: smsInfo?.messageId || null
+        smsMessageId: smsInfo?.messageId || null,
+        emailError: emailInfo?.error || null,
+        smsError: smsInfo?.error || null
       }
     };
   } catch (err) {
-    context.log.error('Notification error:', err);
+    context.log.error('General error:', err);
+    // Always return 200 to not break the form - the appointment is still saved to SharePoint
     context.res = {
       ...context.res,
-      status: 500,
-      body: { success: false, error: err.message }
+      status: 200,
+      body: { 
+        success: true, 
+        message: `Appointment received for ${submission.clientName}`,
+        id: submission.id,
+        note: 'Notifications may have failed but appointment was recorded'
+      }
     };
   }
 };
@@ -72,10 +95,10 @@ function buildTransporter(context) {
       pass: process.env.SMTP_PASS || 'Zharayuri100@'  // fallback for now
     }
   });
-  return transporter.verify().then(() => {
-    context.log('SMTP verified');
-    return transporter;
-  });
+  
+  // Skip verification to avoid blocking - just return the transporter
+  context.log('SMTP transporter created (skipping verification for speed)');
+  return Promise.resolve(transporter);
 }
 
 async function sendEmailNotification(submission, context) {
