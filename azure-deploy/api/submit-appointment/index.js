@@ -45,11 +45,17 @@ module.exports = async function (context, req) {
             status: 'New Appointment Request'
         };
 
-        // Store submission in Azure Storage (instead of local file)
+        // Store submission in Azure Storage (main functionality)
         await storeSubmission(submission);
         
-        // Send email notification
-        await sendEmailNotification(submission);
+        // Try to send email notification (optional - won't fail if email not configured)
+        try {
+            await sendEmailNotification(submission);
+            context.log('📧 Email notification sent successfully');
+        } catch (emailError) {
+            context.log('⚠️ Email notification failed (submission still saved):', emailError.message);
+            // Don't fail the entire submission if email fails
+        }
         
         context.log('📧 New submission received and processed:', submission.clientName);
         
@@ -122,7 +128,15 @@ async function sendEmailNotification(submission) {
 
         // Check if email password is configured
         if (!process.env.EMAIL_PASSWORD) {
-            throw new Error('EMAIL_PASSWORD environment variable not configured');
+            console.log('⚠️ EMAIL_PASSWORD not configured - skipping email notification');
+            console.log('📋 Submission details for manual processing:', {
+                client: submission.clientName,
+                email: submission.email,
+                phone: submission.phone,
+                date: submission.preferredDate,
+                time: submission.preferredTime
+            });
+            throw new Error('Email configuration not available in Azure Functions');
         }
 
         const emailBody = `
