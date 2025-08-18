@@ -79,8 +79,25 @@ async function getSubmissions() {
     try {
         const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
         if (!connectionString) {
-            console.log('⚠️ No storage connection string - returning empty array');
-            return [];
+            console.log('⚠️ No storage connection string - returning sample data for testing');
+            // Return sample data when Azure Storage not configured
+            return [
+                {
+                    id: 'SAMPLE-001',
+                    submittedAt: new Date().toISOString(),
+                    clientName: 'Test Client',
+                    email: 'test@example.com',
+                    phone: '123-456-7890',
+                    appointmentType: 'Initial Consultation',
+                    insuranceType: 'Life Insurance',
+                    preferredDate: '2025-08-20',
+                    preferredTime: '10:00',
+                    meetingType: 'In-Person',
+                    address: 'Test Address',
+                    county: 'Test County',
+                    status: 'Azure Storage Not Configured'
+                }
+            ];
         }
 
         const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);

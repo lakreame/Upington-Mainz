@@ -1228,9 +1228,46 @@
                             throw new Error('Backend API not available');
                         }
                     } catch (apiError) {
-                        console.log('⚠️ Backend API not available, using localStorage fallback');
-                        // Fallback to localStorage
-                        submissions = JSON.parse(localStorage.getItem('appointmentSubmissions') || '[]');
+                        console.log('⚠️ Backend API not available, trying SharePoint and localStorage fallback');
+                        
+                        // Try SharePoint first (since we saw it working in console)
+                        try {
+                            if (window.sharePointManager) {
+                                console.log('🔄 Attempting to load from SharePoint...');
+                                const appointmentData = await window.sharePointManager.getAppointments();
+                                if (appointmentData && appointmentData.length > 0) {
+                                    // Convert SharePoint data to submission format
+                                    submissions = appointmentData.map(item => ({
+                                        id: 'SP-' + item.fields.id || item.id,
+                                        submittedAt: item.fields.Created || item.createdDateTime,
+                                        clientName: item.fields.ClientName || item.fields.Title,
+                                        email: item.fields.ClientEmail,
+                                        phone: item.fields.Notes?.includes('Phone:') ? 
+                                               item.fields.Notes.split('Phone:')[1]?.split('.')[0]?.trim() : 'N/A',
+                                        appointmentType: item.fields.Types,
+                                        insuranceType: item.fields.Notes?.includes('Insurance Type:') ?
+                                                     item.fields.Notes.split('Insurance Type:')[1]?.split('.')[0]?.trim() : 'N/A',
+                                        preferredDate: item.fields.AppointmentDate,
+                                        preferredTime: item.fields.AppointmentTime,
+                                        meetingType: item.fields.Method,
+                                        address: item.fields.Notes?.includes('Address:') ?
+                                               item.fields.Notes.split('Address:')[1]?.split(',')[0]?.trim() : 'N/A',
+                                        county: item.fields.Notes?.includes('County:') ?
+                                              item.fields.Notes.split('County:')[1]?.split('.')[0]?.trim() : 'N/A',
+                                        status: item.fields.Status || 'From SharePoint'
+                                    }));
+                                    console.log('✅ Loaded', submissions.length, 'submissions from SharePoint');
+                                } else {
+                                    throw new Error('No SharePoint data');
+                                }
+                            } else {
+                                throw new Error('SharePoint manager not available');
+                            }
+                        } catch (sharePointError) {
+                            console.log('⚠️ SharePoint also unavailable, using localStorage fallback');
+                            // Final fallback to localStorage
+                            submissions = JSON.parse(localStorage.getItem('appointmentSubmissions') || '[]');
+                        }
                     }
                     
                     // Store submissions for later use
