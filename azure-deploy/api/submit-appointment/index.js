@@ -20,6 +20,19 @@ module.exports = async function (context, req) {
   const submission = {
     id: Date.now().toString(),
     submittedAt: new Date().toISOString(),
+    // SharePoint field names (capitalized)
+    ClientName: req.body.clientName,
+    ClientEmail: req.body.email,
+    ClientPhone: req.body.phone,
+    Types: req.body.appointmentType,
+    InsuranceType: req.body.insuranceType,
+    AppointmentDate: req.body.appointmentDate,
+    AppointmentTime: req.body.appointmentTime,
+    MeetingType: req.body.meetingType,
+    Address: req.body.address,
+    County: req.body.county,
+    Status: 'New Appointment Request',
+    // Keep lowercase versions for backwards compatibility with email templates
     clientName: req.body.clientName,
     email: req.body.email,
     phone: req.body.phone,
