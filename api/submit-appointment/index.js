@@ -29,6 +29,7 @@ module.exports = async function (context, req) {
     }
 
     try {
+        context.log('🔍 Debug: Incoming request body:', req.body);
         const submission = {
             id: Date.now().toString(),
             submittedAt: new Date().toISOString(),
@@ -45,20 +46,28 @@ module.exports = async function (context, req) {
             status: 'New Appointment Request'
         };
 
+        context.log('🔍 Debug: Submission object:', submission);
+
         // Store submission in Azure Storage (main functionality)
-        await storeSubmission(submission);
-        
+        try {
+            await storeSubmission(submission);
+        } catch (storageError) {
+            context.log.error('❌ Storage error (debug):', storageError);
+            throw storageError;
+        }
+
         // Try to send email notification (optional - won't fail if email not configured)
         try {
             await sendEmailNotification(submission);
             context.log('📧 Email notification sent successfully');
         } catch (emailError) {
             context.log('⚠️ Email notification failed (submission still saved):', emailError.message);
+            context.log('⚠️ Full email error (debug):', emailError);
             // Don't fail the entire submission if email fails
         }
-        
+
         context.log('📧 New submission received and processed:', submission.clientName);
-        
+
         context.res = {
             ...context.res,
             status: 200,
@@ -68,13 +77,14 @@ module.exports = async function (context, req) {
                 id: submission.id 
             }
         };
-        
+
     } catch (error) {
-        context.log.error('Submission error:', error);
+        context.log.error('❌ Submission error (debug):', error);
+        context.log('❌ Submission error stack (debug):', error && error.stack);
         context.res = {
             ...context.res,
             status: 500,
-            body: { error: 'Failed to save submission' }
+            body: { error: 'Failed to save submission', details: error && error.message }
         };
     }
 };
