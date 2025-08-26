@@ -265,23 +265,30 @@ function handleAppointmentSubmission(event) {
         return;
     }
     
-    // Simulate form submission (in production, send to server)
+    // Send form data to backend
     showFormLoading();
-    
-    setTimeout(() => {
-        // Store in localStorage for demo purposes
-        const submissions = JSON.parse(localStorage.getItem('appointmentSubmissions') || '[]');
-        submissions.push({
-            ...data,
-            timestamp: new Date().toISOString(),
-            id: Date.now()
-        });
-        localStorage.setItem('appointmentSubmissions', JSON.stringify(submissions));
-        
-        // Show success message
+    // Use local Azure Functions endpoint for development
+    const apiUrl = window.location.hostname === 'localhost' ? 'http://localhost:7071/api/submit-appointment' : '/api/submit-appointment';
+    fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to submit appointment.');
+        }
+        return response.json();
+    })
+    .then(result => {
         showFormSuccess();
         event.target.reset();
-    }, 2000);
+    })
+    .catch(error => {
+        showFormError(error.message || 'Submission failed.');
+    });
 }
 
 // Handle contact form submission

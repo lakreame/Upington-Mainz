@@ -58,5 +58,20 @@
     "address": "302 Concept 21 Circle, AUSTELL, GA 30168",
     "county": "GA",
     "status": "New Appointment Request"
+  },
+  {
+    "id": "1755931275554",
+    "submittedAt": "2025-08-23T06:41:15.554Z",
+    "clientName": "adewale adekanmbi",
+    "email": "aadekanm@students.chattahoocheetech.edu",
+    "phone": "4707987862",
+    "appointmentType": "Follow-up Meeting",
+    "insuranceType": "Life Insurance",
+    "preferredDate": "2025-08-28",
+    "preferredTime": "15:45",
+    "meetingType": "Phone",
+    "address": "302 Concept 21 Circle, Austell, Georgia 30168",
+    "county": "Georgia",
+    "status": "New Appointment Request"
   }
 ]
