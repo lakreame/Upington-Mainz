@@ -383,11 +383,25 @@
     </footer>
 
     <script>
-        // Email notification function using Node.js server
+        // Email notification function with environment detection
         async function sendEmailNotification(appointmentData) {
             try {
-                // Send email via our Node.js server
-                const response = await fetch('http://localhost:8080/api/submit-appointment', {
+                // Auto-detect environment and use appropriate endpoint
+                const isLocalDevelopment = (
+                    window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.port === '8080'
+                );
+                
+                // Use local Node.js server for development, Azure Functions for production
+                const apiEndpoint = isLocalDevelopment 
+                    ? 'http://localhost:8080/api/submit-appointment'  // Local development
+                    : '/api/submit-appointment';                      // Production (Azure Functions)
+                
+                console.log(`🌐 Environment: ${isLocalDevelopment ? 'Local Development' : 'Production'}`);
+                console.log(`📡 API Endpoint: ${apiEndpoint}`);
+                
+                const response = await fetch(apiEndpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -550,14 +564,9 @@ Please contact the client to confirm this appointment.
 
                 console.log('✅ Appointment saved to localStorage with ID:', appointmentId);
 
-                // Try to save to SharePoint (optional - for admin integration)
-                try {
-                    await saveToSharePoint(fullSubmissionData);
-                    console.log('✅ Also saved to SharePoint');
-                } catch (sharePointError) {
-                    console.log('⚠️ SharePoint save failed (appointment still submitted):', sharePointError.message);
-                    // Don't fail the form submission if SharePoint fails
-                }
+                // SharePoint integration is disabled for public forms
+                // SharePoint is only used in the admin panel for viewing appointments
+                console.log('ℹ️ SharePoint integration skipped for public form');
 
                 // Send email notification (if email service is available)
                 try {
