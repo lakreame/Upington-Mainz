@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Form Submissions</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; }
+        pre { background: #f5f5f5; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h2>Test Form Submissions</h2>
+    
+    <button onclick="addTestSubmission()">Add Test Submission</button>
+    <button onclick="viewSubmissions()">View Submissions</button>
+    <button onclick="clearSubmissions()">Clear All Submissions</button>
+    
+    <div id="output"></div>
+
+    <script>
+        function addTestSubmission() {
+            const submissions = JSON.parse(localStorage.getItem('appointmentSubmissions') || '[]');
+            
+            const testSubmission = {
+                id: Date.now().toString(),
+                clientName: 'John Test',
+                email: 'john.test@example.com',
+                phone: '555-0123',
+                appointmentType: 'Medicare',
+                meetingType: 'In-Person',
+                preferredDate: '2025-08-15',
+                preferredTime: '10:00',
+                address: '123 Test St',
+                county: 'Test County',
+                timestamp: new Date().toISOString()
+            };
+            
+            submissions.push(testSubmission);
+            localStorage.setItem('appointmentSubmissions', JSON.stringify(submissions));
+            
+            document.getElementById('output').innerHTML = '<p style="color: green;">✅ Test submission added!</p>';
+        }
+        
+        function viewSubmissions() {
+            const submissions = JSON.parse(localStorage.getItem('appointmentSubmissions') || '[]');
+            document.getElementById('output').innerHTML = `
+                <h3>Current Submissions (${submissions.length})</h3>
+                <pre>${JSON.stringify(submissions, null, 2)}</pre>
+            `;
+        }
+        
+        function clearSubmissions() {
+            localStorage.removeItem('appointmentSubmissions');
+            document.getElementById('output').innerHTML = '<p style="color: red;">🗑️ All submissions cleared!</p>';
+        }
+        
+        // Auto-load on page load
+        viewSubmissions();
+    </script>
+</body>
+</html>

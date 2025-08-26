@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Form Submission</title>
+</head>
+<body>
+    <h1>Test Form Submission</h1>
+    <button onclick="addTestSubmission()">Add Test Submission</button>
+    <button onclick="viewSubmissions()">View Submissions</button>
+    <button onclick="clearSubmissions()">Clear All Submissions</button>
+
+    <script>
+        function addTestSubmission() {
+            const testSubmission = {
+                id: Date.now().toString(),
+                submittedAt: new Date().toISOString(),
+                clientName: 'John Doe',
+                email: 'john.doe@email.com',
+                phone: '(555) 123-4567',
+                appointmentType: 'Medicare',
+                preferredDate: '2024-01-15',
+                preferredTime: '10:00 AM',
+                meetingType: 'In-Person',
+                address: '123 Main St, Anytown, VA 22101',
+                county: 'Fairfax',
+                status: 'New Appointment Request'
+            };
+
+            const existingSubmissions = JSON.parse(localStorage.getItem('appointmentSubmissions') || '[]');
+            existingSubmissions.push(testSubmission);
+            localStorage.setItem('appointmentSubmissions', JSON.stringify(existingSubmissions));
+            
+            alert('Test submission added!');
+        }
+
+        function viewSubmissions() {
+            const submissions = JSON.parse(localStorage.getItem('appointmentSubmissions') || '[]');
+            console.log('Current submissions:', submissions);
+            alert(`Found ${submissions.length} submissions. Check console for details.`);
+        }
+
+        function clearSubmissions() {
+            localStorage.removeItem('appointmentSubmissions');
+            alert('All submissions cleared!');
+        }
+    </script>
+</body>
+</html>

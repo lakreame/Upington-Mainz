@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azure AD Configuration Checker</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .step { margin: 15px 0; padding: 15px; border-radius: 5px; }
+        .success { background: #e8f5e8; color: #2e7d32; border-left: 4px solid #4caf50; }
+        .error { background: #ffebee; color: #c62828; border-left: 4px solid #f44336; }
+        .info { background: #e3f2fd; color: #1976d2; border-left: 4px solid #2196f3; }
+        .warning { background: #fff3e0; color: #f57c00; border-left: 4px solid #ff9800; }
+        button { background: #007cba; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; font-size: 16px; }
+        button:hover { background: #005a87; }
+        .config-box { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin: 10px 0; font-family: monospace; }
+        .instructions { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 15px; margin: 15px 0; }
+        h2 { color: #333; border-bottom: 2px solid #007cba; padding-bottom: 10px; }
+        h3 { color: #555; margin-top: 25px; }
+        ol { margin-left: 20px; }
+        li { margin: 8px 0; }
+        .highlight { background: #ffeb3b; padding: 2px 4px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Azure AD App Registration Configuration</h1>
+    
+    <div class="instructions">
+        <h3>⚠️ Important: Azure AD App Must Be Configured First</h3>
+        <p>Before SharePoint authentication can work, you need to configure an Azure AD app registration. Follow the steps below:</p>
+    </div>
+
+    <h2>📋 Step-by-Step Azure AD Configuration</h2>
+
+    <div class="step info">
+        <h3>Step 1: Access Azure Portal</h3>
+        <ol>
+            <li>Go to <a href="https://portal.azure.com" target="_blank">https://portal.azure.com</a></li>
+            <li>Sign in with your Microsoft 365 admin account</li>
+            <li>Navigate to <strong>"Azure Active Directory"</strong></li>
+        </ol>
+    </div>
+
+    <div class="step info">
+        <h3>Step 2: Create App Registration</h3>
+        <ol>
+            <li>Click <strong>"App registrations"</strong> in the left menu</li>
+            <li>Click <strong>"+ New registration"</strong></li>
+            <li>Fill in the form:
+                <ul>
+                    <li><strong>Name:</strong> "Upington Mainz Admin Dashboard"</li>
+                    <li><strong>Supported account types:</strong> "Accounts in this organizational directory only"</li>
+                    <li><strong>Redirect URI:</strong> 
+                        <div class="config-box">
+                            Platform: Single-page application (SPA)<br>
+                            URI: <span class="highlight">http://localhost:3000/admin.html</span><br>
+                            Also add: <span class="highlight">http://localhost:3000/auth-test.html</span>
+                        </div>
+                    </li>
+                </ul>
+            </li>
+            <li>Click <strong>"Register"</strong></li>
+        </ol>
+    </div>
+
+    <div class="step info">
+        <h3>Step 3: Copy App Details</h3>
+        <p>After creating the app, copy these values:</p>
+        <div class="config-box">
+            <strong>Application (client) ID:</strong> [Copy this value]<br>
+            <strong>Directory (tenant) ID:</strong> [Copy this value]
+        </div>
+    </div>
+
+    <div class="step info">
+        <h3>Step 4: Configure API Permissions</h3>
+        <ol>
+            <li>Click <strong>"API permissions"</strong> in the left menu</li>
+            <li>Click <strong>"+ Add a permission"</strong></li>
+            <li>Select <strong>"Microsoft Graph"</strong></li>
+            <li>Choose <strong>"Delegated permissions"</strong></li>
+            <li>Add these permissions:
+                <ul>
+                    <li><span class="highlight">Sites.ReadWrite.All</span></li>
+                    <li><span class="highlight">User.Read</span></li>
+                </ul>
+            </li>
+            <li>Click <strong>"Add permissions"</strong></li>
+            <li><strong>Important:</strong> Click <strong>"Grant admin consent for [your organization]"</strong></li>
+        </ol>
+    </div>
+
+    <div class="step info">
+        <h3>Step 5: Configure Authentication</h3>
+        <ol>
+            <li>Click <strong>"Authentication"</strong> in the left menu</li>
+            <li>Under <strong>"Single-page application"</strong>, ensure these URIs are added:
+                <div class="config-box">
+                    http://localhost:3000/admin.html<br>
+                    http://localhost:3000/auth-test.html
+                </div>
+            </li>
+            <li>Under <strong>"Advanced settings"</strong>:
+                <ul>
+                    <li>✅ Allow public client flows: <strong>No</strong></li>
+                    <li>✅ Live SDK support: <strong>No</strong></li>
+                </ul>
+            </li>
+            <li>Click <strong>"Save"</strong></li>
+        </ol>
+    </div>
+
+    <h2>🔧 Current Configuration</h2>
+    <div id="currentConfig"></div>
+
+    <h2>🧪 Quick Test</h2>
+    <button onclick="testBasicAuth()">Test Azure AD Connection</button>
+    <div id="testResults"></div>
+
+    <!-- Scripts -->
+    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+    <script src="js/sharepoint-config.js"></script>
+
+    <script>
+        function showCurrentConfig() {
+            const configDiv = document.getElementById('currentConfig');
+            
+            if (typeof SHAREPOINT_CONFIG !== 'undefined') {
+                configDiv.innerHTML = `
+                    <div class="step success">
+                        <h3>✅ Configuration File Found</h3>
+                        <div class="config-box">
+                            <strong>Site URL:</strong> ${SHAREPOINT_CONFIG.siteUrl}<br>
+                            <strong>Client ID:</strong> ${SHAREPOINT_CONFIG.clientId}<br>
+                            <strong>Tenant ID:</strong> ${SHAREPOINT_CONFIG.tenantId}
+                        </div>
+                        <p><strong>Next:</strong> Verify these values match your Azure AD app registration.</p>
+                    </div>
+                `;
+            } else {
+                configDiv.innerHTML = `
+                    <div class="step error">
+                        <h3>❌ Configuration File Missing</h3>
+                        <p>The SharePoint configuration file is not loaded. Please check if <code>js/sharepoint-config.js</code> exists.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testBasicAuth() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="step info">Testing Azure AD connection...</div>';
+            
+            try {
+                if (typeof SHAREPOINT_CONFIG === 'undefined') {
+                    resultsDiv.innerHTML = '<div class="step error">❌ Configuration not loaded. Cannot test.</div>';
+                    return;
+                }
+
+                const msalConfig = {
+                    auth: {
+                        clientId: SHAREPOINT_CONFIG.clientId,
+                        authority: `https://login.microsoftonline.com/${SHAREPOINT_CONFIG.tenantId}`,
+                        redirectUri: window.location.href
+                    }
+                };
+
+                const msalInstance = new msal.PublicClientApplication(msalConfig);
+                await msalInstance.initialize();
+
+                const loginRequest = {
+                    scopes: ["https://graph.microsoft.com/User.Read"]
+                };
+
+                try {
+                    const result = await msalInstance.loginPopup(loginRequest);
+                    resultsDiv.innerHTML = `
+                        <div class="step success">
+                            <h3>✅ Azure AD Authentication Successful!</h3>
+                            <p><strong>User:</strong> ${result.account.name}</p>
+                            <p><strong>Username:</strong> ${result.account.username}</p>
+                            <p>Your Azure AD app is configured correctly for basic authentication.</p>
+                        </div>
+                    `;
+                } catch (authError) {
+                    resultsDiv.innerHTML = `
+                        <div class="step error">
+                            <h3>❌ Azure AD Authentication Failed</h3>
+                            <p><strong>Error:</strong> ${authError.message}</p>
+                            <p><strong>Error Code:</strong> ${authError.errorCode || 'Unknown'}</p>
+                            <div class="config-box">${JSON.stringify(authError, null, 2)}</div>
+                            <p><strong>Common Causes:</strong></p>
+                            <ul>
+                                <li>Incorrect Client ID or Tenant ID</li>
+                                <li>Missing redirect URI in Azure AD app</li>
+                                <li>App not configured for SPA (Single Page Application)</li>
+                                <li>Missing API permissions or admin consent</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="step error">
+                        <h3>❌ Configuration Error</h3>
+                        <p>${error.message}</p>
+                        <div class="config-box">${JSON.stringify(error, null, 2)}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Show config on load
+        window.addEventListener('load', showCurrentConfig);
+    </script>
+</body>
+</html>

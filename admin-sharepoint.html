@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Upington Mainz Insurance</title>
+    <meta name="description" content="Administrative dashboard for managing clients, appointments, and insurance policies at Upington Mainz Insurance Agency.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Microsoft Authentication Library (MSAL) -->
+    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar-hidden {
+                transform: translateX(-100%);
+            }
+        }
+        
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .notification {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div class="text-center">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <p class="text-gray-600">Connecting to SharePoint...</p>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 fixed w-full top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <button id="sidebar-toggle" class="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
+                        <i data-lucide="menu" class="h-6 w-6"></i>
+                    </button>
+                    <div class="flex-shrink-0 flex items-center ml-4 md:ml-0">
+                        <h1 class="text-xl font-semibold text-gray-900">Upington Mainz Admin</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="sync-status" class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">Connected</span>
+                    </div>
+                    <button id="sync-button" class="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100" title="Sync with SharePoint">
+                        <i data-lucide="refresh-cw" class="h-5 w-5"></i>
+                    </button>
+                    <button id="logout-button" class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform sidebar-transition md:translate-x-0">
+        <div class="flex flex-col h-full pt-16">
+            <div class="flex-1 overflow-y-auto">
+                <nav class="px-4 py-6 space-y-2">
+                    <a href="#dashboard" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md text-blue-600 bg-blue-50">
+                        <i data-lucide="pie-chart" class="mr-3 h-5 w-5"></i>
+                        Dashboard
+                    </a>
+                    <a href="#clients" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                        <i data-lucide="users" class="mr-3 h-5 w-5"></i>
+                        Clients
+                    </a>
+                    <a href="#appointments" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                        <i data-lucide="calendar" class="mr-3 h-5 w-5"></i>
+                        Appointments
+                    </a>
+                    <a href="#leads" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                        <i data-lucide="target" class="mr-3 h-5 w-5"></i>
+                        Leads
+                    </a>
+                    <a href="#policies" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                        <i data-lucide="file-text" class="mr-3 h-5 w-5"></i>
+                        Policies
+                    </a>
+                    <a href="#analytics" class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                        <i data-lucide="bar-chart-3" class="mr-3 h-5 w-5"></i>
+                        Analytics
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="md:pl-64">
+        <main class="pt-16">
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="section-content p-6">
+                <div class="max-w-7xl mx-auto">
+                    <div class="mb-8">
+                        <h2 class="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
+                        <p class="text-gray-600">Welcome to your SharePoint-powered admin dashboard</p>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <i data-lucide="users" class="h-8 w-8 text-blue-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">Total Clients</p>
+                                    <p id="total-clients" class="text-2xl font-semibold text-gray-900">-</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <i data-lucide="calendar" class="h-8 w-8 text-green-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">Upcoming Appointments</p>
+                                    <p id="upcoming-appointments" class="text-2xl font-semibold text-gray-900">-</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <i data-lucide="target" class="h-8 w-8 text-yellow-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">New Leads</p>
+                                    <p id="new-leads" class="text-2xl font-semibold text-gray-900">-</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <i data-lucide="file-text" class="h-8 w-8 text-purple-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">Active Policies</p>
+                                    <p id="active-policies" class="text-2xl font-semibold text-gray-900">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg shadow">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-medium text-gray-900">Recent Appointments</h3>
+                            </div>
+                            <div class="p-6">
+                                <div id="recent-appointments" class="space-y-4">
+                                    <div class="text-gray-500 text-center py-8">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-medium text-gray-900">New Leads</h3>
+                            </div>
+                            <div class="p-6">
+                                <div id="recent-leads" class="space-y-4">
+                                    <div class="text-gray-500 text-center py-8">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clients Section -->
+            <section id="clients-section" class="section-content hidden p-6">
+                <div class="max-w-7xl mx-auto">
+                    <div class="mb-6 flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-gray-900">Client Management</h2>
+                        <button id="add-client-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                            <i data-lucide="plus" class="h-4 w-4 mr-2 inline"></i>
+                            Add Client
+                        </button>
+                    </div>
+
+                    <!-- Search and Filters -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Search Clients</label>
+                                <input type="text" id="client-search" placeholder="Search by name, email, or phone..." 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Insurance Type</label>
+                                <select id="client-filter-type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Types</option>
+                                    <option value="Medicare">Medicare</option>
+                                    <option value="Health Insurance">Health Insurance</option>
+                                    <option value="Life Insurance">Life Insurance</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                                <select id="client-filter-status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Statuses</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clients Table -->
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Insurance Type</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clients-table-body" class="bg-white divide-y divide-gray-200">
+                                    <!-- Dynamic content will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Similar sections for Appointments, Leads, Policies, and Analytics will be added -->
+        </main>
+    </div>
+
+    <!-- Add Client Modal -->
+    <div id="add-client-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Add New Client</h3>
+                </div>
+                <form id="add-client-form" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                        <input type="text" name="name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                        <input type="email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                        <input type="tel" name="phone" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                        <input type="date" name="dateOfBirth" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Insurance Type</label>
+                        <select name="insuranceType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Type</option>
+                            <option value="Medicare">Medicare</option>
+                            <option value="Health Insurance">Health Insurance</option>
+                            <option value="Life Insurance">Life Insurance</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                        <textarea name="address" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        <textarea name="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                </form>
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                    <button type="button" id="cancel-add-client" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
+                        Cancel
+                    </button>
+                    <button type="submit" form="add-client-form" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                        Add Client
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notification" class="fixed top-4 right-4 max-w-sm w-full bg-white rounded-lg shadow-lg border border-gray-200 hidden z-50">
+        <div class="p-4">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i id="notification-icon" data-lucide="check-circle" class="h-5 w-5 text-green-500"></i>
+                </div>
+                <div class="ml-3 w-0 flex-1">
+                    <p id="notification-title" class="text-sm font-medium text-gray-900">Success</p>
+                    <p id="notification-message" class="mt-1 text-sm text-gray-500">Operation completed successfully.</p>
+                </div>
+                <div class="ml-4 flex-shrink-0 flex">
+                    <button id="notification-close" class="rounded-md inline-flex text-gray-400 hover:text-gray-500">
+                        <i data-lucide="x" class="h-4 w-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SharePoint Manager -->
+    <script src="js/sharepoint-config.js"></script>
+    <script src="js/sharepoint-manager-v2.js"></script>
+    
+    <!-- Admin Dashboard Script -->
+    <script>
+        class AdminDashboard {
+            constructor() {
+                this.sharePointManager = null;
+                this.currentSection = 'dashboard';
+                this.init();
+            }
+
+            async init() {
+                // Initialize SharePoint connection
+                await this.initializeSharePoint();
+                
+                // Initialize UI
+                this.initializeUI();
+                
+                // Load initial data
+                await this.loadDashboardData();
+                
+                // Hide loading screen
+                document.getElementById('loading-screen').classList.add('hidden');
+            }
+
+            async initializeSharePoint() {
+                try {
+                    // Use the shared SharePoint configuration
+                    const config = SHAREPOINT_CONFIG;
+
+                    this.sharePointManager = new SharePointManager(config);
+                    
+                    // Authenticate with SharePoint
+                    const authenticated = await this.sharePointManager.authenticate();
+                    
+                    if (authenticated) {
+                        this.updateSyncStatus('Connected', 'green');
+                        this.showNotification('Success', 'Connected to SharePoint successfully', 'success');
+                    } else {
+                        throw new Error('Authentication failed');
+                    }
+                } catch (error) {
+                    console.error('SharePoint initialization failed:', error);
+                    this.updateSyncStatus('Disconnected', 'red');
+                    this.showNotification('Error', 'Failed to connect to SharePoint. Some features may not be available.', 'error');
+                }
+            }
+
+            initializeUI() {
+                // Navigation
+                this.initializeNavigation();
+                
+                // Sidebar toggle for mobile
+                document.getElementById('sidebar-toggle').addEventListener('click', () => {
+                    document.getElementById('sidebar').classList.toggle('sidebar-hidden');
+                });
+
+                // Sync button
+                document.getElementById('sync-button').addEventListener('click', () => {
+                    this.loadDashboardData();
+                });
+
+                // Logout button
+                document.getElementById('logout-button').addEventListener('click', () => {
+                    this.logout();
+                });
+
+                // Modal controls
+                this.initializeModals();
+
+                // Search and filters
+                this.initializeSearchAndFilters();
+
+                // Initialize Lucide icons
+                lucide.createIcons();
+            }
+
+            initializeNavigation() {
+                const navLinks = document.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const section = link.getAttribute('href').substring(1);
+                        this.showSection(section);
+                    });
+                });
+            }
+
+            showSection(sectionName) {
+                // Hide all sections
+                document.querySelectorAll('.section-content').forEach(section => {
+                    section.classList.add('hidden');
+                });
+
+                // Show selected section
+                const targetSection = document.getElementById(`${sectionName}-section`);
+                if (targetSection) {
+                    targetSection.classList.remove('hidden');
+                    this.currentSection = sectionName;
+                }
+
+                // Update navigation
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('text-blue-600', 'bg-blue-50');
+                    link.classList.add('text-gray-600');
+                });
+
+                const activeLink = document.querySelector(`[href="#${sectionName}"]`);
+                if (activeLink) {
+                    activeLink.classList.remove('text-gray-600');
+                    activeLink.classList.add('text-blue-600', 'bg-blue-50');
+                }
+
+                // Load section-specific data
+                this.loadSectionData(sectionName);
+            }
+
+            async loadSectionData(sectionName) {
+                if (!this.sharePointManager) return;
+
+                try {
+                    switch (sectionName) {
+                        case 'clients':
+                            await this.loadClients();
+                            break;
+                        case 'appointments':
+                            await this.loadAppointments();
+                            break;
+                        case 'leads':
+                            await this.loadLeads();
+                            break;
+                        case 'policies':
+                            await this.loadPolicies();
+                            break;
+                        case 'analytics':
+                            await this.loadAnalytics();
+                            break;
+                    }
+                } catch (error) {
+                    console.error(`Error loading ${sectionName} data:`, error);
+                    this.showNotification('Error', `Failed to load ${sectionName} data`, 'error');
+                }
+            }
+
+            async loadDashboardData() {
+                if (!this.sharePointManager) return;
+
+                try {
+                    const dashboardData = await this.sharePointManager.getDashboardData();
+                    
+                    if (dashboardData) {
+                        // Update stats cards
+                        document.getElementById('total-clients').textContent = dashboardData.totals.clients;
+                        document.getElementById('upcoming-appointments').textContent = dashboardData.recent.upcomingAppointments;
+                        document.getElementById('new-leads').textContent = dashboardData.recent.newLeads;
+                        document.getElementById('active-policies').textContent = dashboardData.recent.activePolicies;
+
+                        // Update recent appointments
+                        this.updateRecentAppointments(dashboardData.recentAppointments);
+                        
+                        // Update recent leads
+                        this.updateRecentLeads(dashboardData.recentLeads);
+                    }
+                } catch (error) {
+                    console.error('Error loading dashboard data:', error);
+                    this.showNotification('Error', 'Failed to load dashboard data', 'error');
+                }
+            }
+
+            updateRecentAppointments(appointments) {
+                const container = document.getElementById('recent-appointments');
+                
+                if (appointments.length === 0) {
+                    container.innerHTML = '<div class="text-gray-500 text-center py-8">No upcoming appointments</div>';
+                    return;
+                }
+
+                container.innerHTML = appointments.map(appointment => `
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <p class="font-medium text-gray-900">${appointment.ClientName}</p>
+                            <p class="text-sm text-gray-500">${appointment.Types}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-gray-900">${SharePointUtils.formatDate(appointment.AppointmentDate)}</p>
+                            <p class="text-sm text-gray-500">${appointment.AppointmentTime}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updateRecentLeads(leads) {
+                const container = document.getElementById('recent-leads');
+                
+                if (leads.length === 0) {
+                    container.innerHTML = '<div class="text-gray-500 text-center py-8">No new leads</div>';
+                    return;
+                }
+
+                container.innerHTML = leads.map(lead => `
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <p class="font-medium text-gray-900">${lead.Title}</p>
+                            <p class="text-sm text-gray-500">${lead.Email}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${SharePointUtils.getStatusBadgeClass(lead.Status)}">
+                                ${lead.Status}
+                            </span>
+                            <p class="text-sm text-gray-500 mt-1">${lead.InterestType}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            async loadClients() {
+                if (!this.sharePointManager) return;
+
+                try {
+                    const clients = await this.sharePointManager.getClients();
+                    this.updateClientsTable(clients);
+                } catch (error) {
+                    console.error('Error loading clients:', error);
+                    this.showNotification('Error', 'Failed to load clients', 'error');
+                }
+            }
+
+            updateClientsTable(clients) {
+                const tbody = document.getElementById('clients-table-body');
+                
+                if (clients.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">No clients found</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = clients.map(client => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${client.Title}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${client.Email}</div>
+                            <div class="text-sm text-gray-500">${client.Phone}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${client.InsuranceType || 'Not specified'}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${SharePointUtils.getStatusBadgeClass(client.Status)}">
+                                ${client.Status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${SharePointUtils.formatDate(client.Created)}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button onclick="admin.editClient(${client.Id})" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                            <button onclick="admin.deleteClient(${client.Id})" class="text-red-600 hover:text-red-900">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            initializeModals() {
+                // Add Client Modal
+                const addClientBtn = document.getElementById('add-client-btn');
+                const addClientModal = document.getElementById('add-client-modal');
+                const cancelAddClient = document.getElementById('cancel-add-client');
+                const addClientForm = document.getElementById('add-client-form');
+
+                addClientBtn.addEventListener('click', () => {
+                    addClientModal.classList.remove('hidden');
+                });
+
+                cancelAddClient.addEventListener('click', () => {
+                    addClientModal.classList.add('hidden');
+                    addClientForm.reset();
+                });
+
+                addClientForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await this.addClient(new FormData(addClientForm));
+                });
+
+                // Close modal when clicking outside
+                addClientModal.addEventListener('click', (e) => {
+                    if (e.target === addClientModal) {
+                        addClientModal.classList.add('hidden');
+                        addClientForm.reset();
+                    }
+                });
+            }
+
+            async addClient(formData) {
+                if (!this.sharePointManager) return;
+
+                try {
+                    const clientData = {
+                        name: formData.get('name'),
+                        email: formData.get('email'),
+                        phone: formData.get('phone'),
+                        dateOfBirth: formData.get('dateOfBirth'),
+                        insuranceType: formData.get('insuranceType'),
+                        address: formData.get('address'),
+                        notes: formData.get('notes'),
+                        status: 'Active'
+                    };
+
+                    // Validate required fields
+                    if (!clientData.name || !clientData.email || !clientData.phone) {
+                        this.showNotification('Error', 'Please fill in all required fields', 'error');
+                        return;
+                    }
+
+                    // Validate email format
+                    if (!SharePointUtils.validateEmail(clientData.email)) {
+                        this.showNotification('Error', 'Please enter a valid email address', 'error');
+                        return;
+                    }
+
+                    await this.sharePointManager.createClient(clientData);
+                    
+                    // Close modal and reset form
+                    document.getElementById('add-client-modal').classList.add('hidden');
+                    document.getElementById('add-client-form').reset();
+                    
+                    // Refresh clients list
+                    await this.loadClients();
+                    
+                    this.showNotification('Success', 'Client added successfully', 'success');
+                } catch (error) {
+                    console.error('Error adding client:', error);
+                    this.showNotification('Error', 'Failed to add client', 'error');
+                }
+            }
+
+            initializeSearchAndFilters() {
+                const clientSearch = document.getElementById('client-search');
+                const clientFilterType = document.getElementById('client-filter-type');
+                const clientFilterStatus = document.getElementById('client-filter-status');
+
+                if (clientSearch) {
+                    clientSearch.addEventListener('input', this.debounce(() => {
+                        this.filterClients();
+                    }, 300));
+                }
+
+                if (clientFilterType) {
+                    clientFilterType.addEventListener('change', () => {
+                        this.filterClients();
+                    });
+                }
+
+                if (clientFilterStatus) {
+                    clientFilterStatus.addEventListener('change', () => {
+                        this.filterClients();
+                    });
+                }
+            }
+
+            async filterClients() {
+                if (!this.sharePointManager) return;
+
+                const searchTerm = document.getElementById('client-search').value.trim();
+                const filterType = document.getElementById('client-filter-type').value;
+                const filterStatus = document.getElementById('client-filter-status').value;
+
+                try {
+                    let clients;
+                    
+                    if (searchTerm) {
+                        clients = await this.sharePointManager.searchClients(searchTerm);
+                    } else {
+                        clients = await this.sharePointManager.getClients();
+                    }
+
+                    // Apply additional filters
+                    if (filterType) {
+                        clients = clients.filter(client => client.InsuranceType === filterType);
+                    }
+
+                    if (filterStatus) {
+                        clients = clients.filter(client => client.Status === filterStatus);
+                    }
+
+                    this.updateClientsTable(clients);
+                } catch (error) {
+                    console.error('Error filtering clients:', error);
+                    this.showNotification('Error', 'Failed to filter clients', 'error');
+                }
+            }
+
+            updateSyncStatus(status, color) {
+                const syncStatus = document.getElementById('sync-status');
+                const statusDot = syncStatus.querySelector('.w-2');
+                const statusText = syncStatus.querySelector('span');
+
+                statusDot.className = `w-2 h-2 bg-${color}-500 rounded-full`;
+                statusText.textContent = status;
+            }
+
+            showNotification(title, message, type = 'info') {
+                const notification = document.getElementById('notification');
+                const icon = document.getElementById('notification-icon');
+                const titleEl = document.getElementById('notification-title');
+                const messageEl = document.getElementById('notification-message');
+
+                // Set icon and colors based on type
+                const iconMap = {
+                    success: { icon: 'check-circle', color: 'text-green-500' },
+                    error: { icon: 'x-circle', color: 'text-red-500' },
+                    warning: { icon: 'alert-triangle', color: 'text-yellow-500' },
+                    info: { icon: 'info', color: 'text-blue-500' }
+                };
+
+                const config = iconMap[type] || iconMap.info;
+                icon.setAttribute('data-lucide', config.icon);
+                icon.className = `h-5 w-5 ${config.color}`;
+
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+
+                notification.classList.remove('hidden');
+                notification.classList.add('notification');
+
+                // Re-initialize icon
+                lucide.createIcons();
+
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    notification.classList.add('hidden');
+                }, 5000);
+            }
+
+            debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            logout() {
+                if (this.sharePointManager && this.sharePointManager.msalInstance) {
+                    this.sharePointManager.msalInstance.logout();
+                } else {
+                    window.location.reload();
+                }
+            }
+        }
+
+        // Initialize the admin dashboard
+        const admin = new AdminDashboard();
+
+        // Close notification
+        document.getElementById('notification-close').addEventListener('click', () => {
+            document.getElementById('notification').classList.add('hidden');
+        });
+    </script>
+</body>
+</html>

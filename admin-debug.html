@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin SharePoint Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .step { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .error { background: #ffebee; color: #c62828; }
+        .info { background: #e3f2fd; color: #1976d2; }
+        .warning { background: #fff3e0; color: #f57c00; }
+        button { background: #007cba; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #005a87; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Admin SharePoint Connection Debug</h1>
+    
+    <div>
+        <button onclick="testBasicLoading()">1. Test Basic Loading</button>
+        <button onclick="testSharePointConfig()">2. Test SharePoint Config</button>
+        <button onclick="testAuthentication()">3. Test Authentication</button>
+        <button onclick="testFullConnection()">4. Test Full Connection</button>
+    </div>
+
+    <div id="results"></div>
+
+    <!-- Required Scripts -->
+    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+    <script src="js/sharepoint-config.js"></script>
+    <script src="js/sharepoint-manager-v2.js"></script>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+
+        function addResult(step, message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `step ${type}`;
+            div.innerHTML = `<strong>Step ${step}:</strong> ${message}`;
+            resultsDiv.appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function testBasicLoading() {
+            resultsDiv.innerHTML = '';
+            addResult(1, 'Testing basic script loading...', 'info');
+            
+            // Test MSAL
+            if (typeof msal !== 'undefined') {
+                addResult('1a', '✅ MSAL library loaded successfully', 'success');
+            } else {
+                addResult('1a', '❌ MSAL library failed to load', 'error');
+                return;
+            }
+            
+            // Test SharePoint Config
+            if (typeof SHAREPOINT_CONFIG !== 'undefined') {
+                addResult('1b', '✅ SharePoint config loaded successfully', 'success');
+                addResult('1b-details', `Config: ${JSON.stringify(SHAREPOINT_CONFIG, null, 2)}`, 'info');
+            } else {
+                addResult('1b', '❌ SharePoint config failed to load', 'error');
+                return;
+            }
+            
+            // Test SharePoint Manager
+            if (typeof SharePointManager !== 'undefined') {
+                addResult('1c', '✅ SharePoint Manager class loaded successfully', 'success');
+            } else {
+                addResult('1c', '❌ SharePoint Manager class failed to load', 'error');
+                return;
+            }
+            
+            addResult('1-final', '🎉 All basic components loaded successfully!', 'success');
+        }
+
+        function testSharePointConfig() {
+            addResult(2, 'Testing SharePoint configuration...', 'info');
+            
+            if (typeof SHAREPOINT_CONFIG === 'undefined') {
+                addResult(2, '❌ SharePoint config not loaded. Run step 1 first.', 'error');
+                return;
+            }
+            
+            const config = SHAREPOINT_CONFIG;
+            
+            // Check required properties
+            if (config.siteUrl) {
+                addResult('2a', `✅ Site URL: ${config.siteUrl}`, 'success');
+            } else {
+                addResult('2a', '❌ Site URL missing', 'error');
+            }
+            
+            if (config.clientId) {
+                addResult('2b', `✅ Client ID: ${config.clientId}`, 'success');
+            } else {
+                addResult('2b', '❌ Client ID missing', 'error');
+            }
+            
+            if (config.tenantId) {
+                addResult('2c', `✅ Tenant ID: ${config.tenantId}`, 'success');
+            } else {
+                addResult('2c', '❌ Tenant ID missing', 'error');
+            }
+            
+            if (config.lists && config.lists.clients) {
+                addResult('2d', `✅ Lists configured: ${Object.keys(config.lists).join(', ')}`, 'success');
+            } else {
+                addResult('2d', '❌ Lists configuration missing', 'error');
+            }
+        }
+
+        async function testAuthentication() {
+            addResult(3, 'Testing SharePoint authentication...', 'info');
+            
+            try {
+                if (typeof SharePointManager === 'undefined' || typeof SHAREPOINT_CONFIG === 'undefined') {
+                    addResult(3, '❌ Required components not loaded. Run steps 1-2 first.', 'error');
+                    return;
+                }
+                
+                addResult('3a', 'Creating SharePoint Manager instance...', 'info');
+                const manager = new SharePointManager(SHAREPOINT_CONFIG);
+                
+                addResult('3b', 'Attempting authentication...', 'info');
+                const authenticated = await manager.authenticate();
+                
+                if (authenticated) {
+                    addResult('3c', '✅ SharePoint authentication successful!', 'success');
+                    
+                    // Test basic API call
+                    addResult('3d', 'Testing basic API access...', 'info');
+                    try {
+                        const testResult = await manager.makeSharePointRequest('/_api/web', 'GET');
+                        addResult('3e', '✅ SharePoint API accessible!', 'success');
+                        addResult('3e-details', `Site Title: ${testResult.Title}`, 'info');
+                    } catch (apiError) {
+                        addResult('3e', `⚠️ Authentication worked but API failed: ${apiError.message}`, 'warning');
+                    }
+                } else {
+                    addResult('3c', '❌ SharePoint authentication failed', 'error');
+                }
+                
+            } catch (error) {
+                addResult('3-error', `❌ Authentication error: ${error.message}`, 'error');
+                console.error('Authentication error details:', error);
+            }
+        }
+
+        async function testFullConnection() {
+            addResult(4, 'Testing full SharePoint connection with data access...', 'info');
+            
+            try {
+                const manager = new SharePointManager(SHAREPOINT_CONFIG);
+                const authenticated = await manager.authenticate();
+                
+                if (!authenticated) {
+                    addResult(4, '❌ Authentication failed. Cannot proceed with data tests.', 'error');
+                    return;
+                }
+                
+                addResult('4a', '✅ Authentication successful, testing data access...', 'success');
+                
+                // Test lists access
+                try {
+                    addResult('4b', 'Testing Clients list access...', 'info');
+                    const clients = await manager.getClients();
+                    addResult('4b-result', `✅ Clients list accessible! Found ${clients.length} clients.`, 'success');
+                } catch (clientError) {
+                    addResult('4b-result', `❌ Clients list error: ${clientError.message}`, 'error');
+                }
+                
+                try {
+                    addResult('4c', 'Testing Appointments list access...', 'info');
+                    const appointments = await manager.getAppointments();
+                    addResult('4c-result', `✅ Appointments list accessible! Found ${appointments.length} appointments.`, 'success');
+                } catch (appointmentError) {
+                    addResult('4c-result', `❌ Appointments list error: ${appointmentError.message}`, 'error');
+                }
+                
+                try {
+                    addResult('4d', 'Testing Leads list access...', 'info');
+                    const leads = await manager.getLeads();
+                    addResult('4d-result', `✅ Leads list accessible! Found ${leads.length} leads.`, 'success');
+                } catch (leadError) {
+                    addResult('4d-result', `❌ Leads list error: ${leadError.message}`, 'error');
+                }
+                
+                addResult('4-final', '🎉 Full connection test completed!', 'success');
+                
+            } catch (error) {
+                addResult('4-error', `❌ Full connection error: ${error.message}`, 'error');
+                console.error('Full connection error details:', error);
+            }
+        }
+
+        // Auto-run basic test on page load
+        window.addEventListener('load', () => {
+            setTimeout(testBasicLoading, 500);
+        });
+    </script>
+</body>
+</html>

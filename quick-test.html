@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick SharePoint Connection Test</title>
+    <script src="https://unpkg.com/@azure/msal-browser@2.38.0/lib/msal-browser.min.js"></script>
+</head>
+<body>
+    <h1>Quick SharePoint Test</h1>
+    <button onclick="testConnection()">Test Connection</button>
+    <div id="result"></div>
+
+    <script>
+        async function testConnection() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing...';
+
+            try {
+                const msalConfig = {
+                    auth: {
+                        clientId: 'ccd7cc4d-1ee9-47a5-986e-cd615e0695ad',
+                        authority: 'https://login.microsoftonline.com/ebb50a60-c0fc-4e5f-b52d-3a9f7890b416',
+                        redirectUri: window.location.origin
+                    }
+                };
+
+                const msalInstance = new msal.PublicClientApplication(msalConfig);
+                await msalInstance.initialize();
+
+                const loginRequest = {
+                    scopes: ['https://upingtonmainzllc1.sharepoint.com/AllSites.FullControl']
+                };
+
+                console.log('Attempting login...');
+                const loginResponse = await msalInstance.loginPopup(loginRequest);
+                console.log('Login successful:', loginResponse);
+
+                result.innerHTML = `
+                    <h3>SUCCESS!</h3>
+                    <p>User: ${loginResponse.account.username}</p>
+                    <p>Token acquired successfully</p>
+                `;
+
+            } catch (error) {
+                console.error('Connection failed:', error);
+                result.innerHTML = `
+                    <h3>ERROR:</h3>
+                    <p>${error.message}</p>
+                    <p>Check console for details</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

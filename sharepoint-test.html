@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SharePoint Integration Test - Upington Mainz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+    <script src="js/sharepoint-manager.js"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-6">SharePoint Integration Test</h1>
+            
+            <div id="connection-status" class="mb-6 p-4 rounded-lg bg-gray-50">
+                <h2 class="text-lg font-semibold mb-2">Connection Status</h2>
+                <div id="status-indicator" class="flex items-center">
+                    <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                    <span>Connecting...</span>
+                </div>
+            </div>
+
+            <div id="test-results" class="space-y-4">
+                <h2 class="text-xl font-semibold text-gray-900">Test Results</h2>
+                <div id="results-container" class="space-y-2">
+                    <!-- Test results will appear here -->
+                </div>
+            </div>
+
+            <div class="mt-8">
+                <button id="run-tests" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400" disabled>
+                    Run Tests
+                </button>
+                <button id="add-sample-data" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:bg-gray-400 ml-4" disabled>
+                    Add Sample Data
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Quick Form Test</h2>
+            <p class="text-gray-600 mb-4">Test the booking form integration by submitting a test appointment:</p>
+            
+            <form id="test-form" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" name="clientName" placeholder="Client Name" required class="px-4 py-2 border border-gray-300 rounded-lg">
+                    <input type="email" name="clientEmail" placeholder="Email" class="px-4 py-2 border border-gray-300 rounded-lg">
+                    <input type="date" name="date" class="px-4 py-2 border border-gray-300 rounded-lg">
+                    <input type="time" name="time" class="px-4 py-2 border border-gray-300 rounded-lg">
+                    <select name="method" class="px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="Phone">Phone</option>
+                        <option value="In-Person">In-Person</option>
+                        <option value="Video Call">Video Call</option>
+                    </select>
+                    <select name="types" class="px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="Consultation">Consultation</option>
+                        <option value="Policy Review">Policy Review</option>
+                        <option value="New Application">New Application</option>
+                        <option value="Follow-up">Follow-up</option>
+                    </select>
+                </div>
+                <textarea name="notes" placeholder="Notes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg"></textarea>
+                <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400" disabled>
+                    Test Submit to SharePoint
+                </button>
+            </form>
+            
+            <div id="form-result" class="mt-4 hidden p-4 rounded-lg"></div>
+        </div>
+    </div>
+
+    <script>
+        let sharePointManager = null;
+        let testsEnabled = false;
+
+        async function initializeSharePoint() {
+            try {
+                updateStatus('Connecting to SharePoint...', 'yellow');
+                
+                const config = {
+                    siteUrl: 'https://upingtonmainzllc1.sharepoint.com/sites/UpingtonMainz',
+                    clientId: 'ccd7cc4d-1ee9-47a5-986e-cd615e0695ad',
+                    tenantId: 'ebb50a60-c0fc-4e5f-b52d-3a9f7890b416',
+                    lists: {
+                        clients: 'Clients',
+                        appointments: 'Appointments',
+                        leads: 'Leads',
+                        policies: 'Policies'
+                    }
+                };
+
+                sharePointManager = new SharePointManager(config);
+                await sharePointManager.authenticate();
+                
+                updateStatus('Connected to SharePoint', 'green');
+                enableTests();
+                addTestResult('✅ SharePoint authentication successful', 'green');
+                
+            } catch (error) {
+                console.error('SharePoint initialization failed:', error);
+                updateStatus('Connection failed', 'red');
+                addTestResult('❌ SharePoint authentication failed: ' + error.message, 'red');
+            }
+        }
+
+        function updateStatus(message, color) {
+            const statusIndicator = document.getElementById('status-indicator');
+            const colorClasses = {
+                yellow: 'bg-yellow-500',
+                green: 'bg-green-500',
+                red: 'bg-red-500'
+            };
+            
+            statusIndicator.innerHTML = `
+                <div class="w-3 h-3 ${colorClasses[color]} rounded-full mr-2"></div>
+                <span>${message}</span>
+            `;
+        }
+
+        function addTestResult(message, color) {
+            const container = document.getElementById('results-container');
+            const colorClasses = {
+                green: 'text-green-700 bg-green-50',
+                red: 'text-red-700 bg-red-50',
+                blue: 'text-blue-700 bg-blue-50'
+            };
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `p-3 rounded-lg ${colorClasses[color]}`;
+            resultDiv.textContent = message;
+            container.appendChild(resultDiv);
+        }
+
+        function enableTests() {
+            testsEnabled = true;
+            document.getElementById('run-tests').disabled = false;
+            document.getElementById('add-sample-data').disabled = false;
+            document.querySelector('#test-form button').disabled = false;
+        }
+
+        async function runTests() {
+            if (!sharePointManager) return;
+
+            addTestResult('🔄 Starting SharePoint integration tests...', 'blue');
+
+            try {
+                // Test 1: List clients
+                const clients = await sharePointManager.getClients();
+                addTestResult(`✅ Retrieved ${clients.length} clients from SharePoint`, 'green');
+
+                // Test 2: List appointments  
+                const appointments = await sharePointManager.getAppointments();
+                addTestResult(`✅ Retrieved ${appointments.length} appointments from SharePoint`, 'green');
+
+                // Test 3: List leads
+                const leads = await sharePointManager.getLeads();
+                addTestResult(`✅ Retrieved ${leads.length} leads from SharePoint`, 'green');
+
+                // Test 4: List policies
+                const policies = await sharePointManager.getPolicies();
+                addTestResult(`✅ Retrieved ${policies.length} policies from SharePoint`, 'green');
+
+                // Test 5: Dashboard data
+                const dashboardData = await sharePointManager.getDashboardData();
+                if (dashboardData) {
+                    addTestResult(`✅ Dashboard data retrieved successfully`, 'green');
+                    addTestResult(`📊 Stats: ${dashboardData.totals.clients} clients, ${dashboardData.totals.appointments} appointments`, 'blue');
+                }
+
+                addTestResult('🎉 All tests completed successfully!', 'green');
+
+            } catch (error) {
+                addTestResult('❌ Test failed: ' + error.message, 'red');
+            }
+        }
+
+        async function addSampleData() {
+            if (!sharePointManager) return;
+
+            try {
+                addTestResult('🔄 Adding sample data...', 'blue');
+
+                // Add sample client
+                const clientData = {
+                    name: 'Test Client',
+                    email: 'test@example.com',
+                    phone: '(404) 555-0000',
+                    insuranceType: 'Medicare',
+                    status: 'Active',
+                    address: '123 Test St, Atlanta, GA 30309',
+                    notes: 'Sample client for testing'
+                };
+
+                await sharePointManager.createClient(clientData);
+                addTestResult('✅ Sample client added', 'green');
+
+                // Add sample appointment
+                const appointmentData = {
+                    clientName: 'Test Client',
+                    clientEmail: 'test@example.com',
+                    date: new Date().toISOString().split('T')[0],
+                    time: '10:00 AM',
+                    method: 'Phone',
+                    types: 'Consultation',
+                    notes: 'Sample appointment for testing'
+                };
+
+                await sharePointManager.createAppointment(appointmentData);
+                addTestResult('✅ Sample appointment added', 'green');
+
+                // Add sample lead
+                const leadData = {
+                    name: 'Test Lead',
+                    email: 'lead@example.com',
+                    phone: '(404) 555-0001',
+                    source: 'Website',
+                    status: 'New',
+                    interestType: 'Health Insurance',
+                    notes: 'Sample lead for testing'
+                };
+
+                await sharePointManager.createLead(leadData);
+                addTestResult('✅ Sample lead added', 'green');
+
+                addTestResult('🎉 Sample data added successfully!', 'green');
+
+            } catch (error) {
+                addTestResult('❌ Failed to add sample data: ' + error.message, 'red');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('run-tests').addEventListener('click', runTests);
+        document.getElementById('add-sample-data').addEventListener('click', addSampleData);
+
+        document.getElementById('test-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!sharePointManager) {
+                showFormResult('SharePoint not connected', 'red');
+                return;
+            }
+
+            try {
+                const formData = new FormData(this);
+                
+                const appointmentData = {
+                    clientName: formData.get('clientName'),
+                    clientEmail: formData.get('clientEmail'),
+                    date: formData.get('date'),
+                    time: formData.get('time'),
+                    method: formData.get('method'),
+                    types: formData.get('types'),
+                    notes: formData.get('notes')
+                };
+
+                await sharePointManager.createAppointment(appointmentData);
+                showFormResult('✅ Test appointment saved to SharePoint successfully!', 'green');
+                this.reset();
+
+            } catch (error) {
+                showFormResult('❌ Failed to save appointment: ' + error.message, 'red');
+            }
+        });
+
+        function showFormResult(message, color) {
+            const resultDiv = document.getElementById('form-result');
+            const colorClasses = {
+                green: 'bg-green-50 text-green-700 border-green-200',
+                red: 'bg-red-50 text-red-700 border-red-200'
+            };
+            
+            resultDiv.className = `mt-4 p-4 rounded-lg border ${colorClasses[color]}`;
+            resultDiv.textContent = message;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeSharePoint);
+    </script>
+</body>
+</html>

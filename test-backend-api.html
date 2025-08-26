@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Backend API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .button { background: #007cba; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .button:hover { background: #005a87; }
+        .result { margin: 10px 0; padding: 10px; background: #f0f8ff; border-radius: 5px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Backend API Test</h1>
+    
+    <div>
+        <button class="button" onclick="testSubmitAppointment()">📝 Test Submit Appointment</button>
+        <button class="button" onclick="testGetSubmissions()">📋 Get All Submissions</button>
+        <button class="button" onclick="testDeleteSubmission()">🗑️ Delete Last Submission</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+
+        function addResult(message, type = 'result') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            resultsDiv.appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function testSubmitAppointment() {
+            try {
+                addResult('📝 Testing appointment submission...');
+                
+                const testData = {
+                    clientName: 'Jane Doe',
+                    email: 'jane.doe@email.com',
+                    phone: '(555) 987-6543',
+                    appointmentType: 'Health Insurance',
+                    preferredDate: '2024-01-20',
+                    preferredTime: '2:00 PM',
+                    meetingType: 'Virtual',
+                    address: '456 Oak Ave, Springfield, VA 22150',
+                    county: 'Fairfax'
+                };
+
+                const response = await fetch('/api/submit-appointment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    addResult(`✅ SUCCESS: Appointment submitted with ID ${result.id}. Email notification sent to brettanya.brown@upingtonmainz.com`, 'success');
+                } else {
+                    addResult(`❌ ERROR: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGetSubmissions() {
+            try {
+                addResult('📋 Getting all submissions...');
+                
+                const response = await fetch('/api/submissions');
+                const submissions = await response.json();
+                
+                addResult(`✅ Found ${submissions.length} submissions:`, 'success');
+                
+                submissions.forEach((sub, index) => {
+                    addResult(`${index + 1}. ${sub.clientName} (${sub.email}) - ${sub.appointmentType} on ${sub.preferredDate}`);
+                });
+                
+            } catch (error) {
+                addResult(`❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDeleteSubmission() {
+            try {
+                addResult('🗑️ Getting submissions to delete the last one...');
+                
+                const response = await fetch('/api/submissions');
+                const submissions = await response.json();
+                
+                if (submissions.length === 0) {
+                    addResult('⚠️ No submissions to delete', 'error');
+                    return;
+                }
+                
+                const lastSubmission = submissions[submissions.length - 1];
+                
+                const deleteResponse = await fetch(`/api/submissions/${lastSubmission.id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (deleteResponse.ok) {
+                    addResult(`✅ Deleted submission: ${lastSubmission.clientName}`, 'success');
+                } else {
+                    addResult(`❌ Failed to delete submission`, 'error');
+                }
+                
+            } catch (error) {
+                addResult(`❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        // Initial message
+        addResult('🚀 Backend API test page loaded. Click buttons above to test functionality.');
+    </script>
+</body>
+</html>

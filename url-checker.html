@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SharePoint URL Checker</title>
+</head>
+<body>
+    <h1>SharePoint URL Checker</h1>
+    <div id="results"></div>
+
+    <script>
+        async function checkUrls() {
+            const results = document.getElementById('results');
+            const urls = [
+                'https://upingtonmainzllc1.sharepoint.com/sites/ClientManagement',
+                'https://upingtonmainzllc1.sharepoint.com/sites/UpingtonMainz',
+                'https://upingtonmainzllc1.sharepoint.com',
+                'https://upingtonmainzllc1.sharepoint.com/_api/web'
+            ];
+
+            for (const url of urls) {
+                try {
+                    const response = await fetch(url, { 
+                        method: 'HEAD',
+                        mode: 'no-cors'
+                    });
+                    results.innerHTML += `<p>✅ ${url} - Accessible</p>`;
+                } catch (error) {
+                    results.innerHTML += `<p>❌ ${url} - ${error.message}</p>`;
+                }
+            }
+        }
+
+        checkUrls();
+    </script>
+</body>
+</html>

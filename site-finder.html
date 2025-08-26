@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SharePoint Site Finder</title>
+    <script src="https://unpkg.com/@azure/msal-browser@2.38.0/lib/msal-browser.min.js"></script>
+    <script src="js/sharepoint-config.js"></script>
+</head>
+<body>
+    <h1>SharePoint Site Finder</h1>
+    <button onclick="findSites()">Find Available Sites</button>
+    <div id="results"></div>
+
+    <script>
+        let msalInstance;
+        let accessToken;
+
+        async function findSites() {
+            const results = document.getElementById('results');
+            results.innerHTML = 'Searching...';
+
+            try {
+                // Initialize MSAL
+                const msalConfig = {
+                    auth: {
+                        clientId: SHAREPOINT_CONFIG.clientId,
+                        authority: `https://login.microsoftonline.com/${SHAREPOINT_CONFIG.tenantId}`,
+                        redirectUri: window.location.origin
+                    }
+                };
+
+                msalInstance = new msal.PublicClientApplication(msalConfig);
+                await msalInstance.initialize();
+
+                // Get token for Graph API
+                const loginRequest = {
+                    scopes: ["https://graph.microsoft.com/Sites.Read.All"]
+                };
+
+                const response = await msalInstance.loginPopup(loginRequest);
+                accessToken = response.accessToken;
+
+                // Get sites using Microsoft Graph
+                const graphUrl = 'https://graph.microsoft.com/v1.0/sites?search=*';
+                const sitesResponse = await fetch(graphUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (sitesResponse.ok) {
+                    const sitesData = await sitesResponse.json();
+                    let html = '<h2>Available SharePoint Sites:</h2>';
+                    
+                    sitesData.value.forEach(site => {
+                        if (site.webUrl && site.webUrl.includes('upingtonmainzllc1.sharepoint.com')) {
+                            html += `
+                                <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                                    <h3>${site.displayName || site.name}</h3>
+                                    <p><strong>URL:</strong> <a href="${site.webUrl}" target="_blank">${site.webUrl}</a></p>
+                                    <p><strong>Description:</strong> ${site.description || 'No description'}</p>
+                                    <button onclick="testSite('${site.webUrl}')">Test This Site</button>
+                                </div>
+                            `;
+                        }
+                    });
+                    
+                    results.innerHTML = html;
+                } else {
+                    results.innerHTML = `Error: ${sitesResponse.status} ${sitesResponse.statusText}`;
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                results.innerHTML = `Error: ${error.message}`;
+            }
+        }
+
+        async function testSite(siteUrl) {
+            try {
+                // Test basic access to this site
+                const testUrl = `${siteUrl}/_api/web`;
+                const response = await fetch(testUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Accept': 'application/json;odata=verbose'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(`✅ Site accessible: ${data.d.Title}\nURL: ${siteUrl}\n\nUse this URL in your config!`);
+                } else {
+                    alert(`❌ Site not accessible: ${response.status} ${response.statusText}`);
+                }
+            } catch (error) {
+                alert(`❌ Error testing site: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

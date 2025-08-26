@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SharePoint Authentication Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .step { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .error { background: #ffebee; color: #c62828; }
+        .info { background: #e3f2fd; color: #1976d2; }
+        .warning { background: #fff3e0; color: #f57c00; }
+        button { background: #007cba; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #005a87; }
+        .config-display { background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .user-info { background: #e8f5e8; padding: 15px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔐 SharePoint Authentication Test</h1>
+    
+    <div>
+        <button onclick="showConfig()">1. Show Configuration</button>
+        <button onclick="testAuthentication()">2. Test Authentication</button>
+        <button onclick="testSiteAccess()">3. Test Site Access</button>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <div id="results"></div>
+
+    <!-- Required Scripts -->
+    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+    <script src="js/sharepoint-config.js"></script>
+    <script src="js/sharepoint-manager-v2.js"></script>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+        let manager = null;
+
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `step ${type}`;
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showConfig() {
+            resultsDiv.innerHTML = '';
+            addResult('<h3>SharePoint Configuration</h3>', 'info');
+            
+            if (typeof SHAREPOINT_CONFIG !== 'undefined') {
+                const configHtml = `
+                    <div class="config-display">
+                        <strong>Site URL:</strong> ${SHAREPOINT_CONFIG.siteUrl}<br>
+                        <strong>Client ID:</strong> ${SHAREPOINT_CONFIG.clientId}<br>
+                        <strong>Tenant ID:</strong> ${SHAREPOINT_CONFIG.tenantId}<br>
+                        <strong>Lists:</strong> ${JSON.stringify(SHAREPOINT_CONFIG.lists, null, 2)}
+                    </div>
+                `;
+                addResult(configHtml, 'success');
+                
+                // Check current URL
+                addResult(`<strong>Current URL:</strong> ${window.location.href}`, 'info');
+                addResult(`<strong>Expected Redirect URI:</strong> http://localhost:3000/admin.html`, 'info');
+                
+                if (window.location.href.includes('localhost:3000')) {
+                    addResult('✅ URL matches expected redirect URI format', 'success');
+                } else {
+                    addResult('⚠️ URL does not match expected format - this might cause redirect issues', 'warning');
+                }
+            } else {
+                addResult('❌ SharePoint config not loaded', 'error');
+            }
+        }
+
+        async function testAuthentication() {
+            addResult('<h3>Testing Authentication</h3>', 'info');
+            
+            try {
+                if (!manager) {
+                    addResult('Creating SharePoint Manager...', 'info');
+                    manager = new SharePointManager(SHAREPOINT_CONFIG);
+                }
+                
+                addResult('Starting authentication process...', 'info');
+                addResult('🔍 Detailed authentication steps:', 'info');
+                
+                // Step 1: MSAL Configuration
+                addResult('Step 1: Creating MSAL configuration...', 'info');
+                const msalConfig = {
+                    auth: {
+                        clientId: SHAREPOINT_CONFIG.clientId,
+                        authority: `https://login.microsoftonline.com/${SHAREPOINT_CONFIG.tenantId}`,
+                        redirectUri: "http://localhost:3000/admin-sharepoint.html"
+                    },
+                    cache: {
+                        cacheLocation: "localStorage",
+                        storeAuthStateInCookie: false
+                    }
+                };
+                addResult(`MSAL Config: ${JSON.stringify(msalConfig, null, 2)}`, 'info');
+                
+                // Step 2: Initialize MSAL
+                addResult('Step 2: Initializing MSAL...', 'info');
+                const msalInstance = new msal.PublicClientApplication(msalConfig);
+                await msalInstance.initialize();
+                addResult('✅ MSAL initialized successfully', 'success');
+                
+                // Step 2.5: Handle redirect promise (in case we're returning from auth)
+                addResult('Step 2.5: Checking for redirect result...', 'info');
+                const redirectResult = await msalInstance.handleRedirectPromise();
+                if (redirectResult) {
+                    addResult('✅ Found redirect result - authentication successful!', 'success');
+                    const userHtml = `
+                        <div class="user-info">
+                            <strong>Authenticated User:</strong><br>
+                            Name: ${redirectResult.account.name}<br>
+                            Username: ${redirectResult.account.username}<br>
+                            Account ID: ${redirectResult.account.localAccountId}
+                        </div>
+                    `;
+                    addResult(userHtml, 'success');
+                    return;
+                }
+                
+                // Step 3: Check for existing accounts
+                addResult('Step 3: Checking for existing accounts...', 'info');
+                const accounts = msalInstance.getAllAccounts();
+                addResult(`Found ${accounts.length} cached accounts`, 'info');
+                
+                // Step 4: Prepare login request
+                const loginRequest = {
+                    scopes: [
+                        "https://graph.microsoft.com/Sites.ReadWrite.All",
+                        "https://graph.microsoft.com/User.Read"
+                    ]
+                };
+                addResult(`Login request scopes: ${JSON.stringify(loginRequest.scopes)}`, 'info');
+                
+                // Step 5: Attempt authentication
+                let authResult;
+                try {
+                    if (accounts.length > 0) {
+                        addResult('Step 5a: Attempting silent authentication...', 'info');
+                        const silentRequest = {
+                            ...loginRequest,
+                            account: accounts[0]
+                        };
+                        authResult = await msalInstance.acquireTokenSilent(silentRequest);
+                        addResult('✅ Silent authentication successful', 'success');
+                    } else {
+                        throw new Error('No cached accounts found');
+                    }
+                } catch (silentError) {
+                    addResult(`Step 5b: Silent auth failed: ${silentError.message}`, 'warning');
+                    addResult('Redirecting for authentication...', 'info');
+                    addResult('🔄 You will be redirected to Microsoft login page...', 'warning');
+                    
+                    // Use redirect instead of popup
+                    await msalInstance.loginRedirect(loginRequest);
+                    return; // Page will redirect, so we stop here
+                }
+                
+                // Step 6: Check results
+                if (authResult && authResult.accessToken) {
+                    addResult('✅ Authentication successful!', 'success');
+                    addResult(`Access token received (length: ${authResult.accessToken.length})`, 'success');
+                    
+                    // Store in manager
+                    manager.accessToken = authResult.accessToken;
+                    manager.msalInstance = msalInstance;
+                    
+                    // Show user info
+                    if (authResult.account) {
+                        const userHtml = `
+                            <div class="user-info">
+                                <strong>Authenticated User:</strong><br>
+                                Name: ${authResult.account.name}<br>
+                                Username: ${authResult.account.username}<br>
+                                Account ID: ${authResult.account.localAccountId}
+                            </div>
+                        `;
+                        addResult(userHtml, 'success');
+                    }
+                } else {
+                    addResult('❌ Authentication failed - no access token received', 'error');
+                }
+                
+            } catch (error) {
+                addResult(`❌ Authentication error: ${error.message}`, 'error');
+                addResult(`Full error: ${JSON.stringify(error, null, 2)}`, 'error');
+                console.error('Authentication error:', error);
+            }
+        }
+
+        async function testSiteAccess() {
+            addResult('<h3>Testing SharePoint Site Access</h3>', 'info');
+            
+            try {
+                if (!manager) {
+                    addResult('No manager instance. Please authenticate first.', 'warning');
+                    return;
+                }
+                
+                addResult('Testing site connection...', 'info');
+                const testResult = await manager.testConnection();
+                
+                if (testResult.success) {
+                    addResult(`✅ Site access successful!`, 'success');
+                    addResult(`Site Name: ${testResult.siteName}`, 'info');
+                    addResult(`Site ID: ${testResult.siteId}`, 'info');
+                    
+                    // Try to get lists
+                    addResult('Testing list access...', 'info');
+                    try {
+                        const clients = await manager.getClients();
+                        addResult(`✅ Clients list accessible - found ${clients.length} items`, 'success');
+                    } catch (listError) {
+                        addResult(`⚠️ Clients list error: ${listError.message}`, 'warning');
+                    }
+                    
+                } else {
+                    addResult(`❌ Site access failed: ${testResult.error}`, 'error');
+                }
+                
+            } catch (error) {
+                addResult(`❌ Site access error: ${error.message}`, 'error');
+                console.error('Site access error:', error);
+            }
+        }
+
+        async function logout() {
+            try {
+                if (manager && manager.msalInstance) {
+                    await manager.msalInstance.logoutPopup();
+                    addResult('✅ Logged out successfully', 'success');
+                    manager = null;
+                } else {
+                    addResult('No active session to logout', 'info');
+                }
+            } catch (error) {
+                addResult(`❌ Logout error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-show config on page load
+        window.addEventListener('load', () => {
+            setTimeout(showConfig, 500);
+        });
+    </script>
+</body>
+</html>

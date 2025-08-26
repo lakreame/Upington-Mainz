@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SharePoint Authentication - Redirect Method</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .step { margin: 15px 0; padding: 15px; border-radius: 5px; }
+        .success { background: #e8f5e8; color: #2e7d32; border-left: 4px solid #4caf50; }
+        .error { background: #ffebee; color: #c62828; border-left: 4px solid #f44336; }
+        .info { background: #e3f2fd; color: #1976d2; border-left: 4px solid #2196f3; }
+        .warning { background: #fff3e0; color: #f57c00; border-left: 4px solid #ff9800; }
+        button { background: #007cba; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; font-size: 16px; }
+        button:hover { background: #005a87; }
+        .user-info { background: #e8f5e8; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .config-display { background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 10px 0; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🔐 SharePoint Authentication (Redirect Method)</h1>
+    
+    <div class="step info">
+        <h3>How This Works</h3>
+        <p>This page uses <strong>redirect-based authentication</strong> instead of popups, which works better in restricted browser environments.</p>
+        <ol>
+            <li>Click "Login to SharePoint" below</li>
+            <li>You'll be redirected to Microsoft's login page</li>
+            <li>After successful login, you'll be redirected back here</li>
+            <li>The page will then test SharePoint access</li>
+        </ol>
+    </div>
+
+    <div>
+        <button onclick="startAuthentication()">🔑 Login to SharePoint</button>
+        <button onclick="testSharePointAccess()">📊 Test SharePoint Access</button>
+        <button onclick="logout()">🚪 Logout</button>
+    </div>
+
+    <div id="results"></div>
+
+    <!-- Required Scripts -->
+    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+    <script src="js/sharepoint-config.js"></script>
+    <script src="js/sharepoint-manager-v2.js"></script>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+        let msalInstance = null;
+        let sharePointManager = null;
+
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `step ${type}`;
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function initializeMSAL() {
+            if (msalInstance) return msalInstance;
+
+            try {
+                const msalConfig = {
+                    auth: {
+                        clientId: SHAREPOINT_CONFIG.clientId,
+                        authority: `https://login.microsoftonline.com/${SHAREPOINT_CONFIG.tenantId}`,
+                        redirectUri: window.location.href.split('?')[0]
+                    },
+                    cache: {
+                        cacheLocation: "localStorage",
+                        storeAuthStateInCookie: false
+                    }
+                };
+
+                msalInstance = new msal.PublicClientApplication(msalConfig);
+                await msalInstance.initialize();
+                
+                addResult('✅ MSAL initialized successfully', 'success');
+                return msalInstance;
+            } catch (error) {
+                addResult(`❌ MSAL initialization failed: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        async function handleRedirectOnLoad() {
+            try {
+                await initializeMSAL();
+                
+                addResult('🔍 Checking for authentication redirect...', 'info');
+                const redirectResult = await msalInstance.handleRedirectPromise();
+                
+                if (redirectResult) {
+                    addResult('✅ Authentication successful!', 'success');
+                    
+                    const userHtml = `
+                        <div class="user-info">
+                            <strong>Welcome back!</strong><br>
+                            Name: ${redirectResult.account.name}<br>
+                            Email: ${redirectResult.account.username}<br>
+                            <em>You can now test SharePoint access below.</em>
+                        </div>
+                    `;
+                    addResult(userHtml, 'success');
+                    
+                    // Automatically test SharePoint access
+                    setTimeout(() => testSharePointAccess(), 1000);
+                } else {
+                    // Check if we have cached accounts
+                    const accounts = msalInstance.getAllAccounts();
+                    if (accounts.length > 0) {
+                        addResult(`✅ Found cached account: ${accounts[0].name}`, 'success');
+                        addResult('You can test SharePoint access or login again if needed.', 'info');
+                    } else {
+                        addResult('ℹ️ No active session found. Click "Login to SharePoint" to begin.', 'info');
+                    }
+                }
+            } catch (error) {
+                addResult(`❌ Redirect handling error: ${error.message}`, 'error');
+                console.error('Redirect error:', error);
+            }
+        }
+
+        async function startAuthentication() {
+            resultsDiv.innerHTML = '';
+            addResult('<h3>🔐 Starting SharePoint Authentication</h3>', 'info');
+            
+            try {
+                await initializeMSAL();
+                
+                const loginRequest = {
+                    scopes: [
+                        "https://graph.microsoft.com/Sites.ReadWrite.All",
+                        "https://graph.microsoft.com/User.Read"
+                    ]
+                };
+
+                // Check for existing accounts first
+                const accounts = msalInstance.getAllAccounts();
+                if (accounts.length > 0) {
+                    addResult('Attempting silent authentication...', 'info');
+                    try {
+                        const silentRequest = {
+                            ...loginRequest,
+                            account: accounts[0]
+                        };
+                        const result = await msalInstance.acquireTokenSilent(silentRequest);
+                        addResult('✅ Silent authentication successful!', 'success');
+                        
+                        const userHtml = `
+                            <div class="user-info">
+                                <strong>Already authenticated:</strong><br>
+                                Name: ${result.account.name}<br>
+                                Email: ${result.account.username}
+                            </div>
+                        `;
+                        addResult(userHtml, 'success');
+                        return;
+                    } catch (silentError) {
+                        addResult('Silent authentication failed, proceeding with redirect...', 'warning');
+                    }
+                }
+
+                addResult('🔄 Redirecting to Microsoft login page...', 'warning');
+                addResult('You will be redirected back here after login.', 'info');
+                
+                // Use redirect authentication
+                await msalInstance.loginRedirect(loginRequest);
+                
+            } catch (error) {
+                addResult(`❌ Authentication initiation failed: ${error.message}`, 'error');
+                console.error('Auth error:', error);
+            }
+        }
+
+        async function testSharePointAccess() {
+            addResult('<h3>📊 Testing SharePoint Access</h3>', 'info');
+            
+            try {
+                if (!msalInstance) {
+                    await initializeMSAL();
+                }
+
+                const accounts = msalInstance.getAllAccounts();
+                if (accounts.length === 0) {
+                    addResult('❌ No authenticated account found. Please login first.', 'error');
+                    return;
+                }
+
+                addResult('Creating SharePoint manager...', 'info');
+                sharePointManager = new SharePointManager(SHAREPOINT_CONFIG);
+                
+                addResult('Testing SharePoint authentication...', 'info');
+                const authenticated = await sharePointManager.authenticate();
+                
+                if (authenticated) {
+                    addResult('✅ SharePoint authentication successful!', 'success');
+                    
+                    addResult('Testing SharePoint site connection...', 'info');
+                    const connectionTest = await sharePointManager.testConnection();
+                    
+                    if (connectionTest.success) {
+                        addResult(`✅ SharePoint site accessible!`, 'success');
+                        addResult(`Site Name: ${connectionTest.siteName}`, 'info');
+                        
+                        // Test list access
+                        addResult('Testing SharePoint lists...', 'info');
+                        try {
+                            // First, debug what fields are available
+                            addResult('Debugging available fields...', 'info');
+                            try {
+                                const clientFields = await sharePointManager.debugListFields('Clients');
+                                addResult(`Client list fields: ${clientFields.join(', ')}`, 'info');
+                            } catch (debugError) {
+                                addResult(`Debug error: ${debugError.message}`, 'warning');
+                            }
+
+                            const clients = await sharePointManager.getClients();
+                            addResult(`✅ Clients list accessible - found ${clients.length} records`, 'success');
+                            
+                            const appointments = await sharePointManager.getAppointments();
+                            addResult(`✅ Appointments list accessible - found ${appointments.length} records`, 'success');
+                            
+                            addResult('🎉 All SharePoint tests passed! Your system is working correctly.', 'success');
+                            
+                        } catch (listError) {
+                            addResult(`⚠️ List access error: ${listError.message}`, 'warning');
+                            addResult('SharePoint connection works, but some lists may not exist or need configuration.', 'info');
+                            
+                            // Try to debug the issue further
+                            try {
+                                addResult('Attempting to list all available lists...', 'info');
+                                const listsEndpoint = `sites/${sharePointManager.siteId}/lists`;
+                                const listsResult = await sharePointManager.makeGraphRequest(listsEndpoint);
+                                const listNames = listsResult.value.map(list => list.displayName);
+                                addResult(`Available lists: ${listNames.join(', ')}`, 'info');
+                            } catch (listDebugError) {
+                                addResult(`Could not list available lists: ${listDebugError.message}`, 'warning');
+                            }
+                        }
+                        
+                    } else {
+                        addResult(`❌ SharePoint site test failed: ${connectionTest.error}`, 'error');
+                    }
+                } else {
+                    addResult('❌ SharePoint authentication failed', 'error');
+                }
+                
+            } catch (error) {
+                addResult(`❌ SharePoint test error: ${error.message}`, 'error');
+                console.error('SharePoint test error:', error);
+            }
+        }
+
+        async function logout() {
+            try {
+                if (msalInstance) {
+                    const accounts = msalInstance.getAllAccounts();
+                    if (accounts.length > 0) {
+                        await msalInstance.logoutRedirect();
+                    } else {
+                        addResult('No active session to logout.', 'info');
+                    }
+                } else {
+                    addResult('No MSAL instance found.', 'info');
+                }
+            } catch (error) {
+                addResult(`❌ Logout error: ${error.message}`, 'error');
+            }
+        }
+
+        // Handle authentication on page load
+        window.addEventListener('load', () => {
+            setTimeout(handleRedirectOnLoad, 500);
+        });
+    </script>
+</body>
+</html>
