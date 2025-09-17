@@ -1104,6 +1104,70 @@
                 }
             }
 
+            async editClient(clientId) {
+                try {
+                    if (!this.sharePointManager) {
+                        this.showNotification('Error', 'SharePoint not connected', 'error');
+                        return;
+                    }
+
+                    // Get client details
+                    const clients = await this.sharePointManager.getClients();
+                    const client = clients.find(c => c.Id === clientId || c.Id === parseInt(clientId));
+                    
+                    if (!client) {
+                        this.showNotification('Error', 'Client not found', 'error');
+                        return;
+                    }
+
+                    // For now, show a simple prompt for editing
+                    // You can replace this with a proper modal later
+                    const newName = prompt('Edit client name:', client.Title);
+                    if (newName && newName !== client.Title) {
+                        const updatedData = {
+                            Title: newName
+                        };
+
+                        await this.sharePointManager.updateClient(clientId, updatedData);
+                        await this.loadClients(); // Refresh the list
+                        this.showNotification('Success', 'Client updated successfully', 'success');
+                    }
+                } catch (error) {
+                    console.error('Error editing client:', error);
+                    this.showNotification('Error', 'Failed to edit client', 'error');
+                }
+            }
+
+            async deleteClient(clientId) {
+                try {
+                    if (!this.sharePointManager) {
+                        this.showNotification('Error', 'SharePoint not connected', 'error');
+                        return;
+                    }
+
+                    // Get client details for confirmation
+                    const clients = await this.sharePointManager.getClients();
+                    const client = clients.find(c => c.Id === clientId || c.Id === parseInt(clientId));
+                    
+                    if (!client) {
+                        this.showNotification('Error', 'Client not found', 'error');
+                        return;
+                    }
+
+                    // Confirm deletion
+                    const confirmDelete = confirm(`Are you sure you want to delete client "${client.Title}"? This action cannot be undone.`);
+                    
+                    if (confirmDelete) {
+                        await this.sharePointManager.deleteClient(clientId);
+                        await this.loadClients(); // Refresh the list
+                        this.showNotification('Success', 'Client deleted successfully', 'success');
+                    }
+                } catch (error) {
+                    console.error('Error deleting client:', error);
+                    this.showNotification('Error', 'Failed to delete client', 'error');
+                }
+            }
+
             initializeSearchAndFilters() {
                 const clientSearch = document.getElementById('client-search');
                 const clientFilterType = document.getElementById('client-filter-type');
