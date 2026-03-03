@@ -42,3 +42,5 @@ deployment.zip
 
 # Azure Functions local-only settings (not needed in CI/CD)
 azure-deploy/api/local.settings.json
+
+azure-deploy/api/package-lock.json
