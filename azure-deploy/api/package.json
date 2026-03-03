@@ -2,6 +2,9 @@
   "name": "upington-mainz-api",
   "version": "1.0.0",
   "description": "Azure Functions for Upington Mainz appointment system",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "@azure/storage-blob": "^12.17.0",
     "mssql": "^12.2.0",
