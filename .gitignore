@@ -39,4 +39,6 @@ deployment.zip
 # Temporary files
 *.tmp
 *.temp
-azure-deploy/api/
+
+# Azure Functions local-only settings (not needed in CI/CD)
+azure-deploy/api/local.settings.json
