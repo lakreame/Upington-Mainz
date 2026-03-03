@@ -1,9 +1,0 @@
-{
-  "name": "submit-appointment",
-  "version": "1.0.0",
-  "description": "Azure Function for handling appointment submissions",
-  "main": "index.js",
-  "dependencies": {
-    "nodemailer": "^6.9.0"
-  }
-}
