@@ -643,7 +643,7 @@ async function handleLogin(e) {
     const p = document.getElementById('password').value;
     const err = document.getElementById('login-error');
     try {
-        const res = await fetch('/api/admin/login', {
+        const res = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: u, password: p })

@@ -527,7 +527,7 @@ Please log into your admin dashboard to review and respond to this request.
 }
 
 // ── Admin login (credentials validated server-side against .env) ──────
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/auth/login', (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ ok: false, error: 'Missing credentials' });
     const key = 'ADMIN_USER_' + username.toUpperCase().trim();
