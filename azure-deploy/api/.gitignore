@@ -1,3 +1,0 @@
-# Allow node_modules to be included in SWA deployment package
-# (pre-installed via GitHub Actions with Node 18)
-!node_modules

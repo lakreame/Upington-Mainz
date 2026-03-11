@@ -20,15 +20,8 @@ jobs:
           submodules: true
           lfs: false
 
-      - name: Setup Node.js 18
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-
-      - name: Install API dependencies
-        run: |
-          cd azure-deploy/api
-          npm install --omit=dev
+      - name: Pin Node 18 for Oryx
+        run: printf '18\n' > azure-deploy/api/.nvmrc
 
       - name: Build And Deploy
         id: builddeploy
@@ -43,7 +36,6 @@ jobs:
           api_location: "./azure-deploy/api" # Api source code path - optional
           output_location: "/" # Built app content directory - optional
           skip_app_build: true # Skip build since files are already built
-          skip_api_build: true # Dependencies pre-installed with Node 18 above
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
