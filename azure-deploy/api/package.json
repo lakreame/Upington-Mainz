@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Azure Functions for Upington Mainz appointment system",
   "engines": {
-    "node": "~18"
+    "node": "~20"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.17.0",
