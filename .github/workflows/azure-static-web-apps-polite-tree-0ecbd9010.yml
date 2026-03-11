@@ -20,9 +20,6 @@ jobs:
           submodules: true
           lfs: false
 
-      - name: Pin Node 18 for Oryx
-        run: printf '18\n' > azure-deploy/api/.nvmrc
-
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
