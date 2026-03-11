@@ -15,10 +15,20 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
-          lfs: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install API dependencies
+        run: |
+          cd azure-deploy/api
+          npm ci --production 2>/dev/null || npm install --production
+
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
@@ -28,8 +38,9 @@ jobs:
           action: "upload"
           app_location: "./azure-deploy"
           api_location: "./azure-deploy/api"
-          output_location: "/"
+          output_location: ""
           skip_app_build: true
+          skip_api_build: true
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
