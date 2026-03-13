@@ -1,7 +1,10 @@
 {
+  "platform": {
+    "apiRuntime": "node:20"
+  },
   "routes": [
     {
-      "route": "/admin.html"
+      "route": "/upingtonadmin.html"
     },
     {
       "route": "/admin-troubleshoot.html"
@@ -9,7 +12,22 @@
   ],
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/assets/*", "/js/*", "*.css", "*.js", "*.json", "*.ico", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.svg", "*.xml", "*.txt", "*.html"]
+    "exclude": [
+      "/assets/*",
+      "/js/*",
+      "*.css",
+      "*.js",
+      "*.json",
+      "*.ico",
+      "*.png",
+      "*.jpg",
+      "*.jpeg",
+      "*.gif",
+      "*.svg",
+      "*.xml",
+      "*.txt",
+      "*.html"
+    ]
   },
   "mimeTypes": {
     ".xml": "application/xml",
