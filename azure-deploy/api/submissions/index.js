@@ -1,4 +1,6 @@
-﻿const { BlobServiceClient } = require('@azure/storage-blob');
+require('../_env');
+
+const { BlobServiceClient } = require('@azure/storage-blob');
 
 module.exports = async function (context, req) {
   context.log('Get submissions request received');

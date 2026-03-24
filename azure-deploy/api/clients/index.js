@@ -13,6 +13,10 @@ module.exports = async function (context, req) {
 
     const id  = context.bindingData.id ? parseInt(context.bindingData.id) : null;
     const r   = req.body || {};
+    const premiumAmount = normalizeCurrency(r.PremiumAmount);
+    const householdIncome = normalizeCurrency(r.HouseholdIncome);
+    const householdSize = normalizeInteger(r.HouseholdSize);
+    const dependants = normalizeInteger(r.Dependants);
 
     try {
         const pool = await getPool();
@@ -43,9 +47,13 @@ module.exports = async function (context, req) {
                 .input('InsuranceType', sql.NVarChar, r.InsuranceType || '')
                 .input('Status',        sql.NVarChar, r.Status        || 'Active')
                 .input('Notes',         sql.NVarChar, r.Notes         || '')
-                .query(`INSERT INTO Clients (Title,Email,Phone,DateOfBirth,Address,InsuranceType,Status,Notes)
+                .input('PremiumAmount', sql.Decimal(10, 2), premiumAmount)
+                .input('HouseholdIncome', sql.Decimal(12, 2), householdIncome)
+                .input('HouseholdSize', sql.Int, householdSize)
+                .input('Dependants', sql.Int, dependants)
+                .query(`INSERT INTO Clients (Title,Email,Phone,DateOfBirth,Address,InsuranceType,Status,Notes,PremiumAmount,HouseholdIncome,HouseholdSize,Dependants)
                         OUTPUT INSERTED.*
-                        VALUES (@Title,@Email,@Phone,@DateOfBirth,@Address,@InsuranceType,@Status,@Notes)`);
+                        VALUES (@Title,@Email,@Phone,@DateOfBirth,@Address,@InsuranceType,@Status,@Notes,@PremiumAmount,@HouseholdIncome,@HouseholdSize,@Dependants)`);
             context.res = { status: 201, headers: { ...CORS, 'Content-Type': 'application/json' }, body: result.recordset[0] };
             return;
         }
@@ -62,8 +70,14 @@ module.exports = async function (context, req) {
                 .input('InsuranceType', sql.NVarChar, r.InsuranceType || '')
                 .input('Status',        sql.NVarChar, r.Status        || 'Active')
                 .input('Notes',         sql.NVarChar, r.Notes         || '')
+                .input('PremiumAmount', sql.Decimal(10, 2), premiumAmount)
+                .input('HouseholdIncome', sql.Decimal(12, 2), householdIncome)
+                .input('HouseholdSize', sql.Int, householdSize)
+                .input('Dependants', sql.Int, dependants)
                 .query(`UPDATE Clients SET Title=@Title,Email=@Email,Phone=@Phone,DateOfBirth=@DateOfBirth,
                         Address=@Address,InsuranceType=@InsuranceType,Status=@Status,Notes=@Notes,
+                        PremiumAmount=@PremiumAmount,HouseholdIncome=@HouseholdIncome,
+                        HouseholdSize=@HouseholdSize,Dependants=@Dependants,
                         Modified=SYSUTCDATETIME() WHERE Id=@Id`);
             context.res = { status: 200, headers: { ...CORS, 'Content-Type': 'application/json' }, body: { success: true } };
             return;
@@ -84,3 +98,15 @@ module.exports = async function (context, req) {
         context.res = { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' }, body: { error: err.message } };
     }
 };
+
+function normalizeCurrency(value) {
+    if (value === '' || value === undefined || value === null) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizeInteger(value) {
+    if (value === '' || value === undefined || value === null) return null;
+    const parsed = Number.parseInt(value, 10);
+    return Number.isFinite(parsed) ? parsed : null;
+}

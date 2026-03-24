@@ -171,7 +171,7 @@
                             <label for="county" class="block text-sm font-medium text-slate-700 mb-2">County *</label>
                             <input type="text" id="county" name="county" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                         </div>
-                        
+
                         <div>
                             <label for="date" class="block text-sm font-medium text-slate-700 mb-2">Preferred Date</label>
                             <input type="date" id="date" name="date" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
@@ -207,24 +207,7 @@
                         <!-- Insurance Type -->
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-3">What type of insurance? *</label>
-                            <div class="space-y-2">
-                                <label class="flex items-center">
-                                    <input type="radio" name="insuranceType" value="Medicare Health Plan" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
-                                    <span class="text-slate-700">Medicare Health Plan</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="insuranceType" value="Life Insurance" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
-                                    <span class="text-slate-700">Life Insurance</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="insuranceType" value="Health Insurance" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
-                                    <span class="text-slate-700">Health Insurance</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="insuranceType" value="Annuities" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
-                                    <span class="text-slate-700">Annuities</span>
-                                </label>
-                            </div>
+                            <div id="insurance-type-options" class="space-y-2"></div>
                         </div>
                         
                         <!-- Appointment Type -->
@@ -387,6 +370,53 @@
     </footer>
 
     <script>
+        const DEFAULT_INSURANCE_TYPES = [
+            'Medicare Advantage',
+            'Medicare Supplement',
+            'Dental Insurance',
+            'Vision',
+            'Accidental Indemnity',
+            'Part D Prescription Drugs',
+            'Health Insurance',
+            'Life Insurance',
+            'Auto Insurance',
+            'Mortgage Protection',
+            'Annuities'
+        ];
+
+        async function loadInsuranceTypeOptions() {
+            try {
+                const response = await fetch('/api/insurance-types');
+                if (!response.ok) throw new Error('Insurance types request failed');
+                const types = await response.json();
+                renderInsuranceTypeOptions(types.length ? types.map(item => item.Name) : DEFAULT_INSURANCE_TYPES);
+            } catch (error) {
+                console.warn('Falling back to default insurance types:', error.message);
+                renderInsuranceTypeOptions(DEFAULT_INSURANCE_TYPES);
+            }
+        }
+
+        function renderInsuranceTypeOptions(types) {
+            const container = document.getElementById('insurance-type-options');
+            if (!container) return;
+
+            container.innerHTML = types.map(type =>
+                `<label class="flex items-center">
+                    <input type="radio" name="insuranceType" value="${escapeHtml(type)}" required class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                    <span class="text-slate-700">${escapeHtml(type)}</span>
+                </label>`
+            ).join('');
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         // Email notification function with environment detection
         async function sendEmailNotification(appointmentData) {
             try {
@@ -481,7 +511,7 @@ Please contact the client to confirm this appointment.
                     Method: submissionData.meetingType,  // Fixed: Changed from 'MeetingType' to 'Method'
                     Types: submissionData.appointmentType,  // Fixed: Use 'Types' field for appointment type
                     Status: 'Scheduled',  // Use standard status
-                    Notes: `Phone: ${submissionData.phone}, Address: ${submissionData.address}, County: ${submissionData.county}, Insurance Type: ${submissionData.insuranceType}`  // Include phone and other details in notes
+                    Notes: `Phone: ${submissionData.phone}, Address: ${submissionData.address}, County: ${submissionData.county}, Insurance Type: ${submissionData.insuranceType}`
                 };
 
                 // Save to SharePoint Appointments list
@@ -531,7 +561,7 @@ Please contact the client to confirm this appointment.
                     email: formData.get('email'),
                     phone: formData.get('phone'),
                     address: `${formData.get('address')}, ${formData.get('city')}, ${formData.get('state')} ${formData.get('postalCode')}`,
-                    notes: `County: ${formData.get('county')}. Interested in: ${formData.get('insuranceType')}. Appointment Type: ${formData.get('appointmentType')}`,
+                    notes: `County: ${formData.get('county')}. Interested in: ${formData.get('insuranceType')}. Appointment Type: ${formData.get('appointmentType')}.`,
                     source: 'Website',
                     interestType: formData.get('insuranceType'), // Insurance type goes to interestType
                     appointmentType: formData.get('appointmentType'), // New field you added
@@ -545,6 +575,8 @@ Please contact the client to confirm this appointment.
                     phone: formData.get('phone'),
                     appointmentType: formData.get('appointmentType'),
                     insuranceType: formData.get('insuranceType'),
+                    appointmentDate: formData.get('date'),
+                    appointmentTime: formData.get('time'),
                     preferredDate: formData.get('date'),
                     preferredTime: formData.get('time'),
                     meetingType: formData.get('meetingType'),
@@ -619,6 +651,7 @@ Please contact the client to confirm this appointment.
         document.addEventListener('DOMContentLoaded', async function() {
             // Initialize Lucide icons
             lucide.createIcons();
+            await loadInsuranceTypeOptions();
             
             // Note: SharePoint initialization removed from page load
             // It will only be attempted when form is submitted

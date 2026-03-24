@@ -1,3 +1,5 @@
+require('../_env');
+
 const CORS = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',

@@ -1,3 +1,5 @@
+require('../_env');
+
 module.exports = async function (context, req) {
     const hasSQLConfig = !!(
         process.env.SQL_SERVER &&
