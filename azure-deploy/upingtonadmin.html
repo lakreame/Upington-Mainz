@@ -403,8 +403,9 @@
                     </div>
                 </div>
                 <div id="add-client-form" class="hidden card" style="padding:20px;margin-bottom:20px;">
-                    <h3 class="text-white" style="font-size:13px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;"><span class="mat-icon" style="font-size:18px;color:#60a5fa;">person_add</span> New Client</h3>
+                    <h3 id="client-form-title" class="text-white" style="font-size:13px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;"><span class="mat-icon" style="font-size:18px;color:#60a5fa;">person_add</span> New Client</h3>
                     <form id="client-form" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                        <input type="hidden" id="client-id">
                         <div><label>Full Name *</label><input type="text" id="client-name" class="w-full px-3 py-2 text-sm border" placeholder="Jane Smith" required></div>
                         <div><label>Email *</label><input type="email" id="client-email" class="w-full px-3 py-2 text-sm border" placeholder="jane@email.com" required></div>
                         <div><label>Phone</label><input type="tel" id="client-phone" class="w-full px-3 py-2 text-sm border" placeholder="(555) 123-4567"></div>
@@ -416,9 +417,14 @@
                         <div><label>Household Income ($)</label><input type="number" id="client-household-income" class="w-full px-3 py-2 text-sm border" placeholder="0.00" step="0.01" min="0"></div>
                         <div><label>Household Size</label><input type="number" id="client-household-size" class="w-full px-3 py-2 text-sm border" placeholder="1" min="1"></div>
                         <div><label>Dependants</label><input type="number" id="client-dependants" class="w-full px-3 py-2 text-sm border" placeholder="0" min="0"></div>
-                        <div style="grid-column:1/-1;display:flex;gap:8px;">
-                            <button type="submit" class="btn-primary">Save Client</button>
-                            <button type="button" onclick="hideAddClientForm()" class="btn-secondary">Cancel</button>
+                        <div style="grid-column:1/-1;display:flex;gap:8px;justify-content:space-between;">
+                            <div style="display:flex;gap:8px;">
+                                <button type="submit" id="client-save-button" class="btn-primary">Save Client</button>
+                                <button type="button" onclick="hideAddClientForm()" class="btn-secondary">Cancel</button>
+                            </div>
+                            <button type="button" id="client-delete-button" onclick="handleDeleteClient()" class="btn-danger hidden">
+                                <span class="mat-icon" style="font-size:16px;">delete</span> Delete Client
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -2143,7 +2149,12 @@ async function fetchAdminSnapshot() {
 async function runInitialDataLoad() {
     await Promise.all([
         testSharePointConnection(),
-        syncFromSharePoint({ silent: true })
+        syncFromSharePoint({ silent: true }),
+        loadClientsFromSharePoint(),
+        loadLeadsFromSharePoint(),
+        loadPoliciesFromSharePoint(),
+        loadFormSubmissions(),
+        loadCalendarData().then(() => renderCalendar())
     ]);
 }
 
@@ -2192,11 +2203,33 @@ async function loadDashboardData(snapshot) {
     }
 }
 
+let clientCache = [];
+
+function resetClientForm() {
+    document.getElementById('client-id').value = '';
+    document.getElementById('client-form').reset();
+    document.getElementById('client-form-title').innerHTML = '<span class="mat-icon" style="font-size:18px;color:#60a5fa;">person_add</span> New Client';
+    document.getElementById('client-save-button').textContent = 'Save Client';
+    document.getElementById('client-delete-button').classList.add('hidden');
+    populateReferenceSelects();
+}
+
+function showAddClientForm() {
+    resetClientForm();
+    document.getElementById('add-client-form').classList.remove('hidden');
+}
+
+function hideAddClientForm() {
+    document.getElementById('add-client-form').classList.add('hidden');
+    resetClientForm();
+}
+
 async function loadClientsFromSharePoint() {
     const list = document.getElementById('clients-list');
     list.innerHTML = spinner();
     try {
         const clients = await fetchCollection('/api/clients', 'Clients');
+        clientCache = clients;
         document.getElementById('clients-count').textContent = clients.length;
         if (!clients.length) {
             list.innerHTML = empty('No clients yet. Add your first client.');
@@ -2232,8 +2265,9 @@ async function loadClientsFromSharePoint() {
 async function handleAddClient(e) {
     e.preventDefault();
     try {
-        await fetchJson('/api/clients', {
-            method: 'POST',
+        const clientId = document.getElementById('client-id').value;
+        await fetchJson(clientId ? '/api/clients/' + clientId : '/api/clients', {
+            method: clientId ? 'PUT' : 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 Title: document.getElementById('client-name').value,
@@ -2250,11 +2284,56 @@ async function handleAddClient(e) {
             })
         });
         hideAddClientForm();
-        loadClientsFromSharePoint();
-        loadDashboardData();
-        showToast('Client added successfully', 'success');
+        await loadClientsFromSharePoint();
+        await loadDashboardData();
+        showToast(clientId ? 'Client updated successfully' : 'Client added successfully', 'success');
     } catch (e) {
-        showToast('Error adding client: ' + e.message, 'error');
+        showToast('Error saving client: ' + e.message, 'error');
+    }
+}
+
+function editClient(id) {
+    const client = clientCache.find(item => String(item.Id) === String(id));
+    if (!client) {
+        showToast('Client not found', 'error');
+        return;
+    }
+
+    document.getElementById('add-client-form').classList.remove('hidden');
+    document.getElementById('client-id').value = client.Id;
+    document.getElementById('client-name').value = client.Title || '';
+    document.getElementById('client-email').value = client.Email || '';
+    document.getElementById('client-phone').value = client.Phone || '';
+    document.getElementById('client-dob').value = client.DateOfBirth ? String(client.DateOfBirth).substring(0, 10) : '';
+    document.getElementById('client-address').value = client.Address || '';
+    document.getElementById('client-insurance-type').value = client.InsuranceType || '';
+    document.getElementById('client-status').value = client.Status || 'Active';
+    document.getElementById('client-premium').value = client.PremiumAmount ?? '';
+    document.getElementById('client-household-income').value = client.HouseholdIncome ?? '';
+    document.getElementById('client-household-size').value = client.HouseholdSize ?? '';
+    document.getElementById('client-dependants').value = client.Dependants ?? '';
+    document.getElementById('client-form-title').innerHTML = '<span class="mat-icon" style="font-size:18px;color:#60a5fa;">edit</span> Edit Client';
+    document.getElementById('client-save-button').textContent = 'Update Client';
+    document.getElementById('client-delete-button').classList.remove('hidden');
+    document.getElementById('add-client-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function handleDeleteClient() {
+    const clientId = document.getElementById('client-id').value;
+    if (!clientId) {
+        showToast('Select a client first', 'error');
+        return;
+    }
+    if (!confirm('Delete this client?')) return;
+
+    try {
+        await fetchJson('/api/clients/' + clientId, { method: 'DELETE' });
+        hideAddClientForm();
+        await loadClientsFromSharePoint();
+        await loadDashboardData();
+        showToast('Client deleted successfully', 'success');
+    } catch (e) {
+        showToast('Error deleting client: ' + e.message, 'error');
     }
 }
 
