@@ -41,7 +41,7 @@ $staticAppInfo = az staticwebapp create `
     --name $STATIC_WEB_APP `
     --resource-group $RESOURCE_GROUP `
     --location $LOCATION `
-    --source https://github.com/yourusername/upington-mainz `
+    --source https://github.com/lakreame/upington-mainz `
     --branch main `
     --app-location "/" `
     --api-location "api" `

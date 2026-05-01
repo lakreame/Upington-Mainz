@@ -29,6 +29,9 @@ function initializeApp() {
     
     // Initialize carousel
     initializeCarousel();
+
+    // Initialize lead capture modal
+    initializeLeadModal();
 }
 
 // GSAP Animations
@@ -673,6 +676,107 @@ function checkPerformance() {
 // Initialize performance check
 if (typeof performance !== 'undefined') {
     checkPerformance();
+}
+
+// Lead capture modal
+function initializeLeadModal() {
+    const modal = document.getElementById('lead-modal');
+    if (!modal) return;
+
+    const overlay = document.getElementById('lead-modal-overlay');
+    const closeBtn = document.getElementById('lead-modal-close');
+    const form = document.getElementById('lead-capture-form');
+    const successPanel = document.getElementById('lead-form-success');
+    const successClose = document.getElementById('lead-success-close');
+    const errorDiv = document.getElementById('lead-form-error');
+    const errorText = document.getElementById('lead-form-error-text');
+    const submitBtn = document.getElementById('lead-submit-btn');
+
+    function openModal() {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        gsap && gsap.fromTo(modal.querySelector('.relative.bg-white'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' });
+    }
+
+    function closeModal() {
+        const card = modal.querySelector('.relative.bg-white');
+        const done = () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+            form.reset();
+            form.classList.remove('hidden');
+            successPanel.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit';
+        };
+        if (typeof gsap !== 'undefined') {
+            gsap.to(card, { opacity: 0, y: 30, duration: 0.25, ease: 'power2.in', onComplete: done });
+        } else {
+            done();
+        }
+    }
+
+    document.querySelectorAll('[data-open-lead-modal]').forEach(btn => {
+        btn.addEventListener('click', openModal);
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', closeModal);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal(); });
+
+    if (successClose) successClose.addEventListener('click', closeModal);
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        errorDiv.classList.add('hidden');
+
+        const phone = document.getElementById('lead-phone').value.trim();
+        const email = document.getElementById('lead-email').value.trim();
+        const consentChecked = document.getElementById('lead-consent-non-marketing').checked;
+
+        if (!phone) { showLeadError('Phone number is required.'); return; }
+        if (!email) { showLeadError('Email address is required.'); return; }
+        if (!consentChecked) { showLeadError('Please check the consent box to continue.'); return; }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting…';
+
+        const data = {
+            firstName: document.getElementById('lead-first-name').value.trim(),
+            lastName: document.getElementById('lead-last-name').value.trim(),
+            phone,
+            email,
+            consentNonMarketing: consentChecked,
+            consentMarketing: document.getElementById('lead-consent-marketing').checked,
+            source: 'Website',
+            status: 'New'
+        };
+
+        try {
+            const response = await fetch('/api/leads', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) throw new Error('API error ' + response.status);
+        } catch {
+            // API unavailable — persist locally so no submission is lost
+            const leads = JSON.parse(localStorage.getItem('leadCaptures') || '[]');
+            leads.push({ ...data, timestamp: new Date().toISOString(), id: Date.now() });
+            localStorage.setItem('leadCaptures', JSON.stringify(leads));
+        }
+
+        form.classList.add('hidden');
+        successPanel.classList.remove('hidden');
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+
+    function showLeadError(msg) {
+        errorText.textContent = msg;
+        errorDiv.classList.remove('hidden');
+    }
 }
 
 // Export functions for use in other scripts

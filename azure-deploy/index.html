@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Medicare Agent Marietta GA | Health Insurance Marietta | Upington Mainz Insurance</title>
     <meta name="description" content="Upington Mainz Insurance Agency - Licensed Medicare and health insurance agent locally in Georgia and serving Insurance in the whole USA. Compare Medicare Advantage, Medicare Supplement, health insurance, and life insurance plans. Expert guidance for all your insurance needs.">
-    <meta name="keywords" content="medicare agent marietta ga, health insurance marietta georgia, insurance agent near me, medicare advantage marietta, life insurance cobb county, health insurance agent georgia, medicare supplement plans, insurance agency marietta, medicare plans georgia, independent insurance agent, Medicare Georgia, health insurance Atlanta, life insurance GA, Brettanya insurance, Upington Mainz">
     <meta name="author" content="Upington Mainz LLC">
     <meta name="robots" content="index, follow">
     <meta name="geo.region" content="US-GA">
@@ -353,12 +352,9 @@
                             At Upington Mainz, integrity is at the core of everything we do, and your best interests are always our priority. We represent multiple top-rated insurance companies, giving us the flexibility to find the plan or policy that's the perfect fit for your unique needs. You'll receive personalized, one-on-one service not just when you sign up, but all year long whenever you have questions or concerns about your coverage. At Upington Mainz, we treat you like family, because your peace of mind matters to us.
                         </p>
                         <div class="hero-animate flex flex-col sm:flex-row gap-4 justify-center">
-                            <a href="#get-started" class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-semibold text-center">
+                            <button type="button" data-open-lead-modal class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-semibold text-center">
                                 Get Started
-                            </a>
-                            <a href="book.html" class="border border-white text-white px-8 py-3 rounded-lg hover:bg-white hover:text-slate-900 transition-colors font-semibold text-center">
-                                Book Appointment
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -501,9 +497,9 @@
                 </div>
                 
                 <div class="text-center">
-                    <a href="#book" class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-semibold inline-block">
+                    <button type="button" data-open-lead-modal class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-semibold inline-block">
                         Get Started
-                    </a>
+                    </button>
                 </div>
             </div>
         </section>
@@ -907,6 +903,90 @@
             </div>
         </div>
     </footer>
+
+    <!-- Lead Capture Modal -->
+    <div id="lead-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hidden" aria-modal="true" role="dialog" aria-labelledby="lead-modal-title">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="lead-modal-overlay"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div class="p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 id="lead-modal-title" class="text-2xl font-bold text-slate-900">Get Started</h2>
+                        <p class="text-slate-600 mt-1">Tell us a little about yourself and we'll be in touch.</p>
+                    </div>
+                    <button type="button" id="lead-modal-close" class="p-2 text-slate-400 hover:text-slate-600 transition-colors rounded-lg hover:bg-slate-100" aria-label="Close">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <form id="lead-capture-form" novalidate>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="lead-first-name">First Name</label>
+                            <input type="text" id="lead-first-name" name="firstName" placeholder="Enter your first name"
+                                class="w-full px-4 py-3 border border-slate-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-900 placeholder:text-slate-400">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="lead-last-name">Last Name</label>
+                            <input type="text" id="lead-last-name" name="lastName" placeholder="Enter your last name"
+                                class="w-full px-4 py-3 border border-slate-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-900 placeholder:text-slate-400">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="lead-phone">Phone <span class="text-red-500">*</span></label>
+                        <input type="tel" id="lead-phone" name="phone" required placeholder="+1 (555) 000-0000"
+                            class="w-full px-4 py-3 border border-slate-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-900 placeholder:text-slate-400">
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="lead-email">Email <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                            <input type="email" id="lead-email" name="email" required placeholder="your@email.com"
+                                class="w-full pl-11 pr-4 py-3 border border-slate-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-900 placeholder:text-slate-400">
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 mb-6">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" name="consentNonMarketing" id="lead-consent-non-marketing" required
+                                class="mt-1 w-4 h-4 flex-shrink-0 accent-indigo-600">
+                            <span class="text-sm text-slate-600 leading-relaxed">
+                                I consent to receive non-marketing text messages from Upington Mainz LLC related to my request, including responses to inquiries, appointment scheduling, reminders, and service-related updates. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out. Consent is not a condition of purchase.
+                            </span>
+                        </label>
+
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" name="consentMarketing" id="lead-consent-marketing"
+                                class="mt-1 w-4 h-4 flex-shrink-0 accent-indigo-600">
+                            <span class="text-sm text-slate-600 leading-relaxed">
+                                By checking this box, I consent to receive marketing and promotional messages including special offers, discounts, new product updates among others. From <strong>Upington Mainz LLC.,</strong> at the phone number provided. Frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+                            </span>
+                        </label>
+                    </div>
+
+                    <div id="lead-form-error" class="hidden bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                        <p class="text-red-700 text-sm" id="lead-form-error-text"></p>
+                    </div>
+
+                    <button type="submit" id="lead-submit-btn"
+                        class="w-full bg-indigo-600 text-white py-3 rounded-full hover:bg-indigo-700 transition-colors font-semibold text-lg">
+                        Submit
+                    </button>
+                </form>
+
+                <div id="lead-form-success" class="hidden text-center py-8">
+                    <i data-lucide="check-circle" class="w-16 h-16 text-green-500 mx-auto mb-4"></i>
+                    <h3 class="text-xl font-bold text-slate-900 mb-2">Thank you!</h3>
+                    <p class="text-slate-600">We've received your information and will be in touch shortly.</p>
+                    <button type="button" id="lead-success-close" class="mt-6 bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition-colors font-semibold">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="./js/main.js"></script>
 </body>

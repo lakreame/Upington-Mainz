@@ -51,7 +51,7 @@ SHAREPOINT_TENANT_ID = [Your Azure AD Tenant ID]
 
 ### Step 4: Test Connection
 
-1. Open your admin dashboard: https://upingtonmainz.com/complete-admin.html
+1. Open your admin dashboard: https://upingtonmainz.com/upingtonadmin.html
 2. Navigate to **SharePoint Test** section
 3. Click **Test SharePoint Connection**
 4. Should show "✅ SharePoint connection successful!"

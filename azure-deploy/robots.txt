@@ -6,6 +6,11 @@ Sitemap: https://upingtonmainz.com/sitemap.xml
 
 # Disallow admin and private directories
 Disallow: /admin/
+Disallow: /admin.html
+Disallow: /upingtonadmin.html
+Disallow: /simple-admin.html
+Disallow: /clean-admin.html
+Disallow: /complete-admin.html
 Disallow: /private/
 Disallow: /.git/
 Disallow: /node_modules/

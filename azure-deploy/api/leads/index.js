@@ -13,10 +13,6 @@ module.exports = async function (context, req) {
 
     const id = context.bindingData.id ? parseInt(context.bindingData.id) : null;
     const r  = req.body || {};
-    const premiumAmount = normalizeCurrency(r.PremiumAmount);
-    const householdIncome = normalizeCurrency(r.HouseholdIncome);
-    const householdSize = normalizeInteger(r.HouseholdSize);
-    const dependants = normalizeInteger(r.Dependants);
 
     try {
         const pool = await getPool();
@@ -29,45 +25,33 @@ module.exports = async function (context, req) {
         }
 
         if (req.method === 'POST') {
+            const firstName = (r.firstName || '').trim();
+            const lastName  = (r.lastName  || '').trim();
+            const title     = [firstName, lastName].filter(Boolean).join(' ') || 'Unknown';
+
             const result = await pool.request()
-                .input('Title',    sql.NVarChar, r.Title    || '')
-                .input('Email',    sql.NVarChar, r.Email    || '')
-                .input('Phone',    sql.NVarChar, r.Phone    || '')
-                .input('Source',   sql.NVarChar, r.Source   || '')
-                .input('Interest', sql.NVarChar, r.Interest || '')
-                .input('Status',   sql.NVarChar, r.Status   || 'New')
-                .input('Notes',    sql.NVarChar, r.Notes    || '')
-                .input('PremiumAmount', sql.Decimal(10, 2), premiumAmount)
-                .input('HouseholdIncome', sql.Decimal(12, 2), householdIncome)
-                .input('HouseholdSize', sql.Int, householdSize)
-                .input('Dependants', sql.Int, dependants)
-                .query(`INSERT INTO Leads (Title,Email,Phone,Source,Interest,Status,Notes,PremiumAmount,HouseholdIncome,HouseholdSize,Dependants)
+                .input('Title',                sql.NVarChar, title)
+                .input('Email',                sql.NVarChar, r.email   || r.Email   || '')
+                .input('Phone',                sql.NVarChar, r.phone   || r.Phone   || '')
+                .input('Source',               sql.NVarChar, r.source  || r.Source  || 'Website')
+                .input('Status',               sql.NVarChar, r.status  || r.Status  || 'New')
+                .input('Notes',                sql.NVarChar, r.notes   || r.Notes   || '')
+                .input('ConsentNonMarketing',  sql.Bit,      r.consentNonMarketing  ? 1 : 0)
+                .input('ConsentMarketing',     sql.Bit,      r.consentMarketing     ? 1 : 0)
+                .query(`INSERT INTO Leads (Title, Email, Phone, Source, Status, Notes, ConsentNonMarketing, ConsentMarketing)
                         OUTPUT INSERTED.*
-                        VALUES (@Title,@Email,@Phone,@Source,@Interest,@Status,@Notes,@PremiumAmount,@HouseholdIncome,@HouseholdSize,@Dependants)`);
+                        VALUES (@Title, @Email, @Phone, @Source, @Status, @Notes, @ConsentNonMarketing, @ConsentMarketing)`);
             context.res = { status: 201, headers: { ...CORS, 'Content-Type': 'application/json' }, body: result.recordset[0] };
             return;
         }
 
         if (req.method === 'PUT' && id) {
             await pool.request()
-                .input('Id',       sql.Int,      id)
-                .input('Title',    sql.NVarChar, r.Title    || '')
-                .input('Email',    sql.NVarChar, r.Email    || '')
-                .input('Phone',    sql.NVarChar, r.Phone    || '')
-                .input('Source',   sql.NVarChar, r.Source   || '')
-                .input('Interest', sql.NVarChar, r.Interest || '')
-                .input('Status',   sql.NVarChar, r.Status   || 'New')
-                .input('Notes',    sql.NVarChar, r.Notes    || '')
-                .input('PremiumAmount', sql.Decimal(10, 2), premiumAmount)
-                .input('HouseholdIncome', sql.Decimal(12, 2), householdIncome)
-                .input('HouseholdSize', sql.Int, householdSize)
-                .input('Dependants', sql.Int, dependants)
-                .query(`UPDATE Leads SET Title=@Title,Email=@Email,Phone=@Phone,Source=@Source,
-                        Interest=@Interest,Status=@Status,Notes=@Notes,PremiumAmount=@PremiumAmount,
-                        HouseholdIncome=@HouseholdIncome,HouseholdSize=@HouseholdSize,Dependants=@Dependants,
-                        Modified=SYSUTCDATETIME()
-                        WHERE Id=@Id`);
-            context.res = { status: 200, headers: { ...CORS, 'Content-Type': 'application/json' }, body: { success: true } };
+                .input('Id',     sql.Int,      id)
+                .input('Status', sql.NVarChar, r.status || r.Status || 'New')
+                .input('Notes',  sql.NVarChar, r.notes  || r.Notes  || '')
+                .query('UPDATE Leads SET Status = @Status, Notes = @Notes WHERE Id = @Id');
+            context.res = { status: 200, headers: CORS, body: { success: true } };
             return;
         }
 
@@ -75,25 +59,13 @@ module.exports = async function (context, req) {
             await pool.request()
                 .input('Id', sql.Int, id)
                 .query('DELETE FROM Leads WHERE Id = @Id');
-            context.res = { status: 200, headers: { ...CORS, 'Content-Type': 'application/json' }, body: { success: true } };
+            context.res = { status: 200, headers: CORS, body: { success: true } };
             return;
         }
 
-        context.res = { status: 400, headers: CORS, body: { error: 'Bad request' } };
+        context.res = { status: 405, headers: CORS, body: { error: 'Method not allowed' } };
     } catch (err) {
-        context.log.error('leads error:', err.message);
+        context.log.error('Leads API error:', err);
         context.res = { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' }, body: { error: err.message } };
     }
 };
-
-function normalizeCurrency(value) {
-    if (value === '' || value === undefined || value === null) return null;
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-}
-
-function normalizeInteger(value) {
-    if (value === '' || value === undefined || value === null) return null;
-    const parsed = Number.parseInt(value, 10);
-    return Number.isFinite(parsed) ? parsed : null;
-}

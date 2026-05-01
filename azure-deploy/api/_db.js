@@ -72,6 +72,10 @@ BEGIN
         ALTER TABLE dbo.Leads ADD HouseholdSize INT NULL;
     IF COL_LENGTH(N'dbo.Leads', N'DEPENDANTS') IS NULL
         ALTER TABLE dbo.Leads ADD Dependants INT NULL;
+    IF COL_LENGTH(N'dbo.Leads', N'ConsentNonMarketing') IS NULL
+        ALTER TABLE dbo.Leads ADD ConsentNonMarketing BIT NOT NULL CONSTRAINT DF_Leads_ConsentNonMarketing DEFAULT (0);
+    IF COL_LENGTH(N'dbo.Leads', N'ConsentMarketing') IS NULL
+        ALTER TABLE dbo.Leads ADD ConsentMarketing BIT NOT NULL CONSTRAINT DF_Leads_ConsentMarketing DEFAULT (0);
 END;
 
 IF OBJECT_ID(N'dbo.Clients', N'U') IS NOT NULL
